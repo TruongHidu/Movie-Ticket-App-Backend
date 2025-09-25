@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý phim</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary: #4e73df;
+            --secondary: #6f42c1;
+            --success: #1cc88a;
+            --info: #36b9cc;
+            --warning: #f6c23e;
+            --danger: #e74a3b;
+            --light: #f8f9fc;
+            --dark: #5a5c69;
+        }
+        
+        body {
+            background-color: #f8f9fc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .page-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 1.5rem;
+            margin: -1rem -1rem 2rem -1rem;
+            border-radius: 0 0 15px 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .filter-buttons .btn {
+            border-radius: 20px;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .movie-card {
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin-bottom: 1.5rem;
+            background: white;
+            overflow: hidden;
+        }
+        
+        .movie-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .movie-poster {
+            height: 250px;
+            object-fit: cover;
+            width: 100%;
+        }
+        
+        .movie-status-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 0.8rem;
+            padding: 0.35rem 0.65rem;
+            border-radius: 20px;
+        }
+        
+        .movie-info {
+            padding: 1.25rem;
+        }
+        
+        .movie-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .movie-meta {
+            color: #6c757d;
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .movie-description {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .action-buttons .btn {
+            border-radius: 20px;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.8rem;
+            margin-right: 0.5rem;
+        }
+        
+        .table-view {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+        
+        .view-toggle {
+            margin-bottom: 1rem;
+            text-align: right;
+        }
+        
+        .view-toggle .btn {
+            border-radius: 20px;
+            margin-left: 0.5rem;
+        }
+        
+        .table thead th {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 1rem;
+        }
+        
+        .table tbody td {
+            padding: 1rem;
+            vertical-align: middle;
+        }
+        
+        .table-img {
+            width: 60px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+        
+        @media (max-width: 768px) {
+            .table-responsive {
+                overflow-x: auto;
+            }
+            
+            .movie-card {
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
+</head>
+<body class="container mt-4">
+    <!-- Header -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1><i class="bi bi-film me-2"></i>Quản lý phim</h1>
+            <a th:href="@{/}" class="btn btn-light">
+                <i class="bi bi-arrow-left me-1"></i>Về Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+        <div class="filter-buttons">
+            <a th:href="@{/admin/movies}" class="btn btn-outline-primary">
+                <i class="bi bi-collection me-1"></i>Tất cả
+            </a>
+            <a th:href="@{/admin/movies(status=1)}" class="btn btn-outline-success">
+                <i class="bi bi-check-circle me-1"></i>Hoạt động
+            </a>
+            <a th:href="@{/admin/movies(status=0)}" class="btn btn-outline-danger">
+                <i class="bi bi-x-circle me-1"></i>Khóa
+            </a>
+        </div>
+        
+        <div>
+            <a th:href="@{/admin/movies/add}" class="btn btn-success">
+                <i class="bi bi-plus-circle me-1"></i>Thêm phim mới
+            </a>
+        </div>
+    </div>
+
+    <!-- View Toggle -->
+    <div class="view-toggle">
+        <button id="cardViewBtn" class="btn btn-primary">
+            <i class="bi bi-grid-3x3-gap"></i> Xem dạng thẻ
+        </button>
+        <button id="tableViewBtn" class="btn btn-outline-primary">
+            <i class="bi bi-list"></i> Xem dạng bảng
+        </button>
+    </div>
+
+    <!-- Card View -->
+    <div id="cardView" class="row">
+        <div th:each="movie : ${movies}" class="col-md-6 col-lg-4">
+            <div class="movie-card">
+                <div class="position-relative">
+                    <img th:if="${movie.poster}" th:src="${movie.poster}" class="movie-poster" alt="Poster phim">
+                    <div th:if="${movie.poster == null}" class="movie-poster bg-light d-flex align-items-center justify-content-center">
+                        <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                    </div>
+                    <span th:class="${movie.status == 1} ? 'badge bg-success movie-status-badge' : 'badge bg-danger movie-status-badge'"
+                          th:text="${movie.status == 1} ? 'Hoạt động' : 'Khóa'">
+                    </span>
+                </div>
+                
+                <div class="movie-info">
+                    <h5 class="movie-title" th:text="${movie.tenPhim}"></h5>
+                    
+                    <div class="movie-meta">
+                        <div><i class="bi bi-clock me-1"></i> <span th:text="${movie.thoiLuong} + ' phút'"></span></div>
+                        <div><i class="bi bi-calendar-event me-1"></i> <span th:text="${#temporals.format(movie.namPhatHanh, 'dd/MM/yyyy')}"></span></div>
+                        <div><i class="bi bi-person me-1"></i> <span th:text="${movie.daoDien}"></span></div>
+                    </div>
+                    
+                    <div class="movie-description" th:text="${movie.descrip}"></div>
+                    
+                    <div class="action-buttons d-flex">
+                        <a th:href="@{'/admin/movies/edit/' + ${movie.idPhim}}" class="btn btn-primary btn-sm">
+                            <i class="bi bi-pencil"></i> Sửa
+                        </a>
+                        <form th:action="@{'/admin/movies/status/' + ${movie.idPhim}}" method="post">
+                            <button type="submit" class="btn btn-warning btn-sm">
+                                <span th:if="${movie.status == 1}"><i class="bi bi-lock"></i> Khóa</span>
+                                <span th:if="${movie.status == 0}"><i class="bi bi-unlock"></i> Mở</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table View -->
+    <div id="tableView" class="table-view" style="display: none;">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Poster</th>
+                        <th>Tên phim</th>
+                        <th>Thể loại</th>
+                        <th>Thời lượng</th>
+                        <th>Đạo diễn</th>
+                        <th>Năm PH</th>
+                        <th>Trạng thái</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="movie : ${movies}">
+                        <td>
+                            <img th:if="${movie.poster}" th:src="${movie.poster}" class="table-img" alt="Poster">
+                            <div th:if="${movie.poster == null}" class="table-img bg-light d-flex align-items-center justify-content-center">
+                                <i class="bi bi-image text-muted"></i>
+                            </div>
+                        </td>
+                        <td th:text="${movie.tenPhim}"></td>
+                        <td th:text="${movie.theloai}"></td>
+                        <td th:text="${movie.thoiLuong} + ' phút'"></td>
+                        <td th:text="${movie.daoDien}"></td>
+                        <td th:text="${#temporals.format(movie.namPhatHanh, 'dd/MM/yyyy')}"></td>
+                        <td>
+                            <span th:if="${movie.status == 1}" class="badge bg-success">Hoạt động</span>
+                            <span th:if="${movie.status == 0}" class="badge bg-danger">Khóa</span>
+                        </td>
+                        <td>
+                            <a th:href="@{'/admin/movies/edit/' + ${movie.idPhim}}" class="btn btn-primary btn-sm">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form th:action="@{'/admin/movies/status/' + ${movie.idPhim}}" method="post" style="display:inline">
+                                <button type="submit" class="btn btn-warning btn-sm">
+                                    <span th:if="${movie.status == 1}"><i class="bi bi-lock"></i></span>
+                                    <span th:if="${movie.status == 0}"><i class="bi bi-unlock"></i></span>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Xử lý chuyển đổi giữa chế độ xem thẻ và xem bảng
+        document.getElementById('cardViewBtn').addEventListener('click', function() {
+            document.getElementById('cardView').style.display = 'flex';
+            document.getElementById('tableView').style.display = 'none';
+            this.classList.add('btn-primary');
+            this.classList.remove('btn-outline-primary');
+            document.getElementById('tableViewBtn').classList.add('btn-outline-primary');
+            document.getElementById('tableViewBtn').classList.remove('btn-primary');
+        });
+
+        document.getElementById('tableViewBtn').addEventListener('click', function() {
+            document.getElementById('cardView').style.display = 'none';
+            document.getElementById('tableView').style.display = 'block';
+            this.classList.add('btn-primary');
+            this.classList.remove('btn-outline-primary');
+            document.getElementById('cardViewBtn').classList.add('btn-outline-primary');
+            document.getElementById('cardViewBtn').classList.remove('btn-primary');
+        });
+
+        // Mặc định hiển thị chế độ xem thẻ
+        document.getElementById('cardViewBtn').click();
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

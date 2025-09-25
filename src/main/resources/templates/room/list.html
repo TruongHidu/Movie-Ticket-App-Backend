@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý phòng chiếu</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary: #4e73df;
+            --secondary: #6f42c1;
+            --success: #1cc88a;
+            --info: #36b9cc;
+            --warning: #f6c23e;
+            --danger: #e74a3b;
+            --light: #f8f9fc;
+            --dark: #5a5c69;
+        }
+        
+        body {
+            background-color: #f8f9fc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .page-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 1.5rem;
+            margin: -1rem -1rem 2rem -1rem;
+            border-radius: 0 0 15px 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .room-card {
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin-bottom: 1.5rem;
+            background: white;
+            overflow: hidden;
+        }
+        
+        .room-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .room-icon {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        
+        .room-status-badge {
+            font-size: 0.8rem;
+            padding: 0.35rem 0.65rem;
+            border-radius: 20px;
+        }
+        
+        .action-buttons .btn {
+            border-radius: 20px;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.8rem;
+            margin-right: 0.5rem;
+        }
+        
+        .table-view {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+        
+        .view-toggle {
+            margin-bottom: 1rem;
+            text-align: right;
+        }
+        
+        .view-toggle .btn {
+            border-radius: 20px;
+            margin-left: 0.5rem;
+        }
+        
+        .table thead th {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 1rem;
+        }
+        
+        .table tbody td {
+            padding: 1rem;
+            vertical-align: middle;
+        }
+        
+        .card-view {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+        
+        .card-view .room-card {
+            flex: 0 0 calc(33.333% - 1.5rem);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        @media (max-width: 992px) {
+            .card-view .room-card {
+                flex: 0 0 calc(50% - 1.5rem);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .card-view .room-card {
+                flex: 0 0 100%;
+            }
+            
+            .table-responsive {
+                overflow-x: auto;
+            }
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #6c757d;
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            color: #dee2e6;
+        }
+    </style>
+</head>
+<body class="container mt-4">
+    <!-- Header -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1><i class="bi bi-building me-2"></i>Quản lý phòng chiếu</h1>
+            <a th:href="@{/admin}" class="btn btn-light">
+                <i class="bi bi-arrow-left me-1"></i>Về Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+        <div class="filter-buttons">
+            <a th:href="@{/admin/rooms}" class="btn btn-outline-primary">
+                <i class="bi bi-collection me-1"></i>Tất cả
+            </a>
+            <a th:href="@{/admin/rooms(status=1)}" class="btn btn-outline-success">
+                <i class="bi bi-check-circle me-1"></i>Hoạt động
+            </a>
+            <a th:href="@{/admin/rooms(status=0)}" class="btn btn-outline-danger">
+                <i class="bi bi-x-circle me-1"></i>Khóa
+            </a>
+        </div>
+        
+        <div>
+            <a th:href="@{/admin/rooms/add}" class="btn btn-success">
+                <i class="bi bi-plus-circle me-1"></i>Thêm phòng mới
+            </a>
+        </div>
+    </div>
+
+    <!-- View Toggle -->
+    <div class="view-toggle">
+        <button id="cardViewBtn" class="btn btn-primary">
+            <i class="bi bi-grid-3x3-gap"></i> Xem dạng thẻ
+        </button>
+        <button id="tableViewBtn" class="btn btn-outline-primary">
+            <i class="bi bi-list"></i> Xem dạng bảng
+        </button>
+    </div>
+
+    <!-- Card View -->
+    <div id="cardView" class="card-view">
+        <th:block th:if="${rooms != null and !rooms.empty}">
+            <div th:each="room : ${rooms}" class="room-card">
+                <div class="card-body text-center p-4">
+                    <div class="room-icon">
+                        <i class="bi bi-camera-reels"></i>
+                    </div>
+                    <h5 th:text="${room.tenPhongChieu}" class="card-title"></h5>
+                    <div class="mb-3">
+                        <span th:class="${room.status == 1} ? 'badge bg-success room-status-badge' : 'badge bg-danger room-status-badge'"
+                              th:text="${room.status == 1} ? 'Hoạt động' : 'Đã khóa'">
+                        </span>
+                    </div>
+                    <p class="text-muted small" th:text="'ID: ' + ${room.idPhongChieu}"></p>
+                    
+                    <div class="action-buttons d-flex justify-content-center mt-3">
+                        <a th:href="@{'/admin/rooms/edit/' + ${room.idPhongChieu}}" class="btn btn-primary btn-sm">
+                            <i class="bi bi-pencil"></i> Sửa
+                        </a>
+                        <form th:action="@{'/admin/rooms/status/' + ${room.idPhongChieu}}" method="post">
+                            <button type="submit" class="btn btn-warning btn-sm">
+                                <span th:if="${room.status == 1}"><i class="bi bi-lock"></i> Khóa</span>
+                                <span th:if="${room.status == 0}"><i class="bi bi-unlock"></i> Mở</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </th:block>
+        
+        <th:block th:if="${rooms == null or rooms.empty}">
+            <div class="empty-state w-100">
+                <i class="bi bi-inboxes"></i>
+                <h4>Chưa có phòng chiếu nào</h4>
+                <p>Hãy thêm phòng chiếu mới để bắt đầu quản lý</p>
+                <a th:href="@{/admin/rooms/add}" class="btn btn-primary mt-2">
+                    <i class="bi bi-plus-circle me-1"></i>Thêm phòng chiếu
+                </a>
+            </div>
+        </th:block>
+    </div>
+
+    <!-- Table View -->
+    <div id="tableView" class="table-view" style="display: none;">
+        <th:block th:if="${rooms != null and !rooms.empty}">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Tên phòng</th>
+                            <th>Trạng thái</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="room : ${rooms}">
+                            <td th:text="${room.idPhongChieu}"></td>
+                            <td th:text="${room.tenPhongChieu}"></td>
+                            <td>
+                                <span th:if="${room.status == 1}" class="badge bg-success">Hoạt động</span>
+                                <span th:if="${room.status == 0}" class="badge bg-danger">Khóa</span>
+                            </td>
+                            <td>
+                                <a th:href="@{'/admin/rooms/edit/' + ${room.idPhongChieu}}" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-pencil"></i> Sửa
+                                </a>
+                                <form th:action="@{'/admin/rooms/status/' + ${room.idPhongChieu}}" method="post" style="display:inline">
+                                    <button type="submit" class="btn btn-warning btn-sm">
+                                        <span th:if="${room.status == 1}"><i class="bi bi-lock"></i> Khóa</span>
+                                        <span th:if="${room.status == 0}"><i class="bi bi-unlock"></i> Mở</span>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </th:block>
+        
+        <th:block th:if="${rooms == null or rooms.empty}">
+            <div class="empty-state">
+                <i class="bi bi-inboxes"></i>
+                <h4>Chưa có phòng chiếu nào</h4>
+                <p>Hãy thêm phòng chiếu mới để bắt đầu quản lý</p>
+                <a th:href="@{/admin/rooms/add}" class="btn btn-primary mt-2">
+                    <i class="bi bi-plus-circle me-1"></i>Thêm phòng chiếu
+                </a>
+            </div>
+        </th:block>
+    </div>
+
+    <script>
+        // Xử lý chuyển đổi giữa chế độ xem thẻ và xem bảng
+        document.getElementById('cardViewBtn').addEventListener('click', function() {
+            document.getElementById('cardView').style.display = 'flex';
+            document.getElementById('tableView').style.display = 'none';
+            this.classList.add('btn-primary');
+            this.classList.remove('btn-outline-primary');
+            document.getElementById('tableViewBtn').classList.add('btn-outline-primary');
+            document.getElementById('tableViewBtn').classList.remove('btn-primary');
+        });
+
+        document.getElementById('tableViewBtn').addEventListener('click', function() {
+            document.getElementById('cardView').style.display = 'none';
+            document.getElementById('tableView').style.display = 'block';
+            this.classList.add('btn-primary');
+            this.classList.remove('btn-outline-primary');
+            document.getElementById('cardViewBtn').classList.add('btn-outline-primary');
+            document.getElementById('cardViewBtn').classList.remove('btn-primary');
+        });
+
+        // Mặc định hiển thị chế độ xem thẻ
+        document.getElementById('cardViewBtn').click();
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

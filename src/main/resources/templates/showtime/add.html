@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Add Showtime</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container mt-4">
+<h1>Add Showtime</h1>
+<form th:action="@{/admin/showtimes/add}" th:object="${showtime}" method="post">
+    <div class="mb-3">
+        <label class="form-label">Khung giờ</label>
+        <input type="time" class="form-control" th:field="*{khungGio}" required>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Trạng thái</label>
+        <select class="form-control" th:field="*{status}">
+            <option value="1">Hoạt động</option>
+            <option value="0">Ngưng</option>
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Lưu</button>
+</form>
+
+</body>
+</html>

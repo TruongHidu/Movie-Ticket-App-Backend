@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary: #4e73df;
+            --secondary: #6f42c1;
+            --success: #1cc88a;
+            --info: #36b9cc;
+            --warning: #f6c23e;
+            --danger: #e74a3b;
+            --light: #f8f9fc;
+            --dark: #5a5c69;
+        }
+        
+        body {
+            background-color: #f8f9fc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .dashboard-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            border-radius: 0 0 15px 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .dashboard-card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+            height: 100%;
+        }
+        
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .movie-card { border-top: 4px solid var(--primary); }
+        .user-card { border-top: 4px solid var(--success); }
+        .seat-card { border-top: 4px solid var(--info); }
+        .room-card { border-top: 4px solid var(--warning); }
+        .showtime-card { border-top: 4px solid var(--secondary); }
+        .schedule-card { border-top: 4px solid var(--danger); }
+        
+        .movie-card .card-icon { color: var(--primary); }
+        .user-card .card-icon { color: var(--success); }
+        .seat-card .card-icon { color: var(--info); }
+        .room-card .card-icon { color: var(--warning); }
+        .showtime-card .card-icon { color: var(--secondary); }
+        .schedule-card .card-icon { color: var(--danger); }
+        
+        .btn-card {
+            border-radius: 20px;
+            padding: 0.5rem 1.5rem;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .movie-card .btn-card { background-color: var(--primary); border-color: var(--primary); }
+        .user-card .btn-card { background-color: var(--success); border-color: var(--success); }
+        .seat-card .btn-card { background-color: var(--info); border-color: var(--info); }
+        .room-card .btn-card { background-color: var(--warning); border-color: var(--warning); color: #000; }
+        .showtime-card .btn-card { background-color: var(--secondary); border-color: var(--secondary); }
+        .schedule-card .btn-card { background-color: var(--danger); border-color: var(--danger); }
+        
+        .btn-card:hover {
+            opacity: 0.9;
+            transform: scale(1.05);
+        }
+        
+        .footer {
+            background-color: white;
+            padding: 1.5rem 0;
+            margin-top: 3rem;
+            border-radius: 15px 15px 0 0;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
+            color: var(--dark);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="dashboard-header text-center">
+        <div class="container">
+            <h1 class="display-4 fw-bold"><i class="bi bi-speedometer2 me-2"></i>Admin Dashboard</h1>
+            <p class="lead">Quản lý hệ thống rạp chiếu phim</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="row g-4">
+            <!-- Quản lý phim -->
+            <div class="col-md-6 col-lg-4">
+                <div class="dashboard-card card movie-card">
+                    <div class="card-body text-center p-4">
+                        <div class="card-icon">
+                            <i class="bi bi-film"></i>
+                        </div>
+                        <h3>Quản lý phim</h3>
+                        <p class="text-muted">Xem, thêm, sửa, xóa thông tin phim</p>
+                        <a href="/admin/movies" class="btn btn-primary btn-card">Truy cập</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quản lý người dùng -->
+            <div class="col-md-6 col-lg-4">
+                <div class="dashboard-card card user-card">
+                    <div class="card-body text-center p-4">
+                        <div class="card-icon">
+                            <i class="bi bi-people-fill"></i>
+                        </div>
+                        <h3>Quản lý người dùng</h3>
+                        <p class="text-muted">Quản lý tài khoản người dùng và phân quyền</p>
+                        <a href="/admin/users" class="btn btn-success btn-card">Truy cập</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quản lý loại ghế -->
+            <div class="col-md-6 col-lg-4">
+                <div class="dashboard-card card seat-card">
+                    <div class="card-body text-center p-4">
+                        <div class="card-icon">
+                            <i class="bi bi-grid-3x3-gap-fill"></i>
+                        </div>
+                        <h3>Quản lý loại ghế</h3>
+                        <p class="text-muted">Thiết lập các loại ghế và giá vé</p>
+                        <a href="/admin/seat-types" class="btn btn-info btn-card">Truy cập</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quản lý phòng chiếu -->
+            <div class="col-md-6 col-lg-4">
+                <div class="dashboard-card card room-card">
+                    <div class="card-body text-center p-4">
+                        <div class="card-icon">
+                            <i class="bi bi-building"></i>
+                        </div>
+                        <h3>Quản lý phòng chiếu</h3>
+                        <p class="text-muted">Thiết lập thông tin các phòng chiếu</p>
+                        <a href="/admin/rooms" class="btn btn-warning btn-card">Truy cập</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quản lý khung giờ chiếu -->
+            <div class="col-md-6 col-lg-4">
+                <div class="dashboard-card card showtime-card">
+                    <div class="card-body text-center p-4">
+                        <div class="card-icon">
+                            <i class="bi bi-clock-history"></i>
+                        </div>
+                        <h3>Quản lý khung giờ chiếu</h3>
+                        <p class="text-muted">Thiết lập các khung giờ chiếu trong ngày</p>
+                        <a href="/admin/showtimes" class="btn btn-secondary btn-card">Truy cập</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quản lý lịch chiếu -->
+            <div class="col-md-6 col-lg-4">
+                <div class="dashboard-card card schedule-card">
+                    <div class="card-body text-center p-4">
+                        <div class="card-icon">
+                            <i class="bi bi-calendar-event"></i>
+                        </div>
+                        <h3>Quản lý lịch chiếu</h3>
+                        <p class="text-muted">Lập lịch chiếu phim cho các phòng</p>
+                        <a href="/admin/schedules" class="btn btn-danger btn-card">Truy cập</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer text-center mt-5">
+        <div class="container">
+            <p class="mb-0">Hệ thống quản lý rạp chiếu phim &copy; 2023</p>
+            <small class="text-muted">Phiên bản 1.0</small>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
