@@ -2,6 +2,7 @@ package com.example.movie_ticket_.controller.api;
 
 import com.example.movie_ticket_.dto.MovieScheduleDTO;
 import com.example.movie_ticket_.dto.ScheduleDTO;
+import com.example.movie_ticket_.dto.ShowTimeScheduleDTO;
 import com.example.movie_ticket_.entity.Schedule;
 import com.example.movie_ticket_.service.ScheduleService;
 import lombok.RequiredArgsConstructor;
@@ -48,20 +49,64 @@ public class ScheduleApiController {
     /**
      * Lấy danh sách lịch chiếu theo id phim và ngày cụ thể
      */
+//    @GetMapping("/movie/{movieId}/date/{date}")
+//    public ResponseEntity<List<ScheduleDTO>> getSchedulesByMovieAndDate(
+//            @PathVariable int movieId,
+//            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+//
+//        List<Schedule> schedules = scheduleService.getActiveSchedulesByMovieAndDate((long) movieId, date);
+//
+//        // Convert to DTO
+//        List<ScheduleDTO> scheduleDTOs = schedules.stream()
+//                .map(this::convertToDTO)
+//                .collect(Collectors.toList());
+//
+//        return ResponseEntity.ok(scheduleDTOs);
+//    }
+
+
     @GetMapping("/movie/{movieId}/date/{date}")
-    public ResponseEntity<List<ScheduleDTO>> getSchedulesByMovieAndDate(
+    public ResponseEntity<MovieScheduleDTO> getSchedulesByMovieAndDate(
             @PathVariable int movieId,
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
 
+        // Lấy danh sách lịch chiếu active cho phim + ngày cụ thể
         List<Schedule> schedules = scheduleService.getActiveSchedulesByMovieAndDate((long) movieId, date);
 
-        // Convert to DTO
-        List<ScheduleDTO> scheduleDTOs = schedules.stream()
-                .map(this::convertToDTO)
+        if (schedules.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // Lấy thông tin phim từ lịch chiếu đầu tiên (vì tất cả schedule đều cùng 1 movie)
+        var movie = schedules.get(0).getMovie();
+
+        // Convert list schedules -> List<ShowTimeScheduleDTO>
+        List<ShowTimeScheduleDTO> showTimeScheduleDTOs = schedules.stream()
+                .map(s -> new ShowTimeScheduleDTO(
+                        s.getIdLichChieu(),
+                        s.getShowTime().getKhungGio(),  // LocalTime
+                        s.getNgayChieu(),               // LocalDate
+                        s.getRoom().getTenPhongChieu()  // Tên phòng chiếu
+                ))
                 .collect(Collectors.toList());
 
-        return ResponseEntity.ok(scheduleDTOs);
+        // Build MovieScheduleDTO
+        MovieScheduleDTO movieScheduleDTO = new MovieScheduleDTO(
+                movie.getIdPhim(),
+                movie.getTenPhim(),
+                movie.getTheloai(),
+                movie.getThoiLuong(),
+                movie.getDaoDien(),
+                movie.getNamPhatHanh(),
+                movie.getPoster(),
+                movie.getDescrip(),
+                movie.getDienVien(),
+                showTimeScheduleDTOs
+        );
+
+        return ResponseEntity.ok(movieScheduleDTO);
     }
+
 
     /**
      * Lấy danh sách ngày chiếu có lịch cho một phim

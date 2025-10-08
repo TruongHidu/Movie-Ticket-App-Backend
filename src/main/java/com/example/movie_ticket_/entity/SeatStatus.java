@@ -3,6 +3,8 @@ package com.example.movie_ticket_.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "trangthaighe")
 @Getter
@@ -30,4 +32,10 @@ public class SeatStatus {
     @Column(name = "STATUS", nullable = false)
     private Integer status = 0;
     // 0 = trống, 1 = đã đặt, 2 = đang giữ, 3 = hỏng...
+    @Column(name = "HOLD_UNTIL")
+    private LocalDateTime holdUntil;
+
+    @Column(name = "HOLD_BY")
+    private Integer holdBy; // user đang giữ ghế
+
 }
