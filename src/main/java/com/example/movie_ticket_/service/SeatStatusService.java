@@ -37,13 +37,13 @@ public class SeatStatusService {
                     .loaiGhe(seat.getSeatNumber().getLoaiGhe().getTenLoaiGhe())
                     .status(seat.getStatus())
                     .donGia(seat.getSeatNumber().getLoaiGhe().getDonGia().toBigInteger())
-                    .status(seat.getHoldBy())
+                    .holdBy(seat.getHoldBy())
                     .build();
         }).collect(Collectors.toList());
     }
 
     // Giữ ghế
-    public boolean holdSeat(Long idLichChieu, String idGhe, String idPhongChieu, int userId) {
+    public boolean holdSeat(Long idLichChieu, String idGhe, String idPhongChieu, long userId) {
         SeatStatusId seatId = new SeatStatusId(idLichChieu, idGhe, idPhongChieu);
         SeatStatus seat = seatStatusRepository.findById(seatId).orElse(null);
 
@@ -58,7 +58,7 @@ public class SeatStatusService {
     }
 
     // Bỏ giữ
-    public boolean unholdSeat(Long idLichChieu, String idGhe, String idPhongChieu, int userId) {
+    public boolean unholdSeat(Long idLichChieu, String idGhe, String idPhongChieu, long userId) {
         SeatStatusId seatId = new SeatStatusId(idLichChieu, idGhe, idPhongChieu);
         SeatStatus seat = seatStatusRepository.findById(seatId).orElse(null);
 
@@ -75,7 +75,7 @@ public class SeatStatusService {
 
 
     // Thanh toán thành công (đặt ghế)
-    public boolean bookSeat(Long idLichChieu, String idGhe, String idPhongChieu, int userId) {
+    public boolean bookSeat(Long idLichChieu, String idGhe, String idPhongChieu, long userId) {
         SeatStatusId seatId = new SeatStatusId(idLichChieu, idGhe, idPhongChieu);
         SeatStatus seat = seatStatusRepository.findById(seatId).orElse(null);
 

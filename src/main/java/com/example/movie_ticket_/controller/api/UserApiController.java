@@ -2,6 +2,7 @@ package com.example.movie_ticket_.controller.api;
 
 import java.util.List;
 
+import com.example.movie_ticket_.dto.ChangePasswordRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,6 +44,24 @@ public class UserApiController {
         User user = userService.findByEmail(email);
         return user != null ? ResponseEntity.ok(user) : ResponseEntity.notFound().build();
     }
+
+    @PatchMapping("/change-password")
+    public ResponseEntity<?> changePassword(
+            @AuthenticationPrincipal String email,
+            @RequestBody ChangePasswordRequest request) {
+
+        if (email == null) {
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
+
+        boolean success = userService.changePassword(email, request.getOldPassword(), request.getNewPassword());
+        if (!success) {
+            return ResponseEntity.badRequest().body("Mật khẩu cũ không đúng!");
+        }
+
+        return ResponseEntity.ok("Đổi mật khẩu thành công!");
+    }
+
 
 
 

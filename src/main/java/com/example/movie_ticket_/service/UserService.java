@@ -15,4 +15,6 @@ public interface UserService {
     String generateRandomPassword(int length);
     boolean matchesPassword(String rawPassword, String encodedPassword);
      User findByEmail(String email);
+    boolean changePassword(String email, String oldPassword, String newPassword);
+
 }

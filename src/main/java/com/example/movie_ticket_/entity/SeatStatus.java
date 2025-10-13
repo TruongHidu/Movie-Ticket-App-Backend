@@ -36,6 +36,6 @@ public class SeatStatus {
     private LocalDateTime holdUntil;
 
     @Column(name = "HOLD_BY")
-    private Integer holdBy; // user đang giữ ghế
+    private Long holdBy; // user đang giữ ghế
 
 }
