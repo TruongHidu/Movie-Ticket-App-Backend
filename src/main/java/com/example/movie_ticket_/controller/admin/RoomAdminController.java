@@ -29,7 +29,8 @@ public class RoomAdminController {
 
     @PostMapping("/add")
     public String add(@ModelAttribute Room room) {
-        roomService.save(room);
+        System.out.println("==> ID nhận từ form: " + room.getIdPhongChieu());
+        roomService.add(room);
         return "redirect:/admin/rooms";
     }
 

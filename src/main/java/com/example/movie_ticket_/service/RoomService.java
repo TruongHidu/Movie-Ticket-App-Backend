@@ -31,14 +31,31 @@ public class RoomService {
         return phongChieuRepository.save(phongChieu);
     }
 
-    private String generateNextId(String lastId) {
-        if (lastId == null) {
-            return "PC001";
-        }
-        int number = Integer.parseInt(lastId.substring(2));
-        number++;
-        return String.format("PC%03d", number);
+    public Room add(Room room) {
+        // Luôn đảm bảo đây là bản ghi mới, không bị Hibernate nhầm
+        String lastId = phongChieuRepository.findLastId(); // VD: PC002
+        String newId = generateNextId(lastId);             // => PC003
+
+        // Tạo một đối tượng hoàn toàn mới (tránh reuse object đã gắn session)
+        Room newRoom = new Room();
+        newRoom.setIdPhongChieu(newId);
+        newRoom.setTenPhongChieu(room.getTenPhongChieu());
+        newRoom.setStatus(room.getStatus());
+
+        return phongChieuRepository.saveAndFlush(newRoom);
     }
+
+
+    public Room update(Room room) {
+        return phongChieuRepository.save(room);
+    }
+
+    private String generateNextId(String lastId) {
+        if (lastId == null) return "PC001";
+        int num = Integer.parseInt(lastId.substring(2)) + 1;
+        return String.format("PC%03d", num);
+    }
+
 
     public void delete(String id) {
         phongChieuRepository.deleteById(id);
