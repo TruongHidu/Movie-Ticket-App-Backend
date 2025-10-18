@@ -26,7 +26,10 @@ public class SecurityConfig {
                                 "/api/auth/**",   // login/register
                                 "/admin/**",
                                 "/api/movies/**",
-                                "/api/schedules/**"
+                                "/api/schedules/**",
+                                "/api/payment-methods/**",
+                                "/api/food-drink/**"
+
                         ).permitAll()
                         // Những API cần token
                         .requestMatchers("/api/seats/**").authenticated()

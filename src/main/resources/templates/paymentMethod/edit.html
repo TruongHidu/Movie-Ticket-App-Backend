@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sửa phương thức thanh toán</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary: #4e73df;
+            --secondary: #6f42c1;
+            --success: #1cc88a;
+            --info: #36b9cc;
+            --warning: #f6c23e;
+            --danger: #e74a3b;
+            --light: #f8f9fc;
+            --dark: #5a5c69;
+        }
+
+        body {
+            background-color: #f8f9fc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+
+        .form-container {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, var(--warning) 0%, #dda20a 100%);
+            color: white;
+            padding: 1.5rem;
+            margin: -2rem -2rem 2rem -2rem;
+            border-radius: 15px 15px 0 0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .form-body {
+            padding: 2rem;
+        }
+
+        .form-icon {
+            font-size: 3rem;
+            color: var(--warning);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .form-title {
+            color: var(--dark);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        .form-subtitle {
+            color: #6c757d;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control, .form-select {
+            border: 2px solid #e3e6f0;
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--warning);
+            box-shadow: 0 0 0 0.25rem rgba(246, 194, 62, 0.25);
+        }
+
+        .btn {
+            border-radius: 10px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            box-shadow: 0 4px 15px rgba(78, 115, 223, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(78, 115, 223, 0.6);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            box-shadow: 0 4px 15px rgba(108, 117, 125, 0.4);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(108, 117, 125, 0.6);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .action-buttons .btn {
+            flex: 1;
+        }
+
+        .method-info {
+            background: #f8f9fc;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid var(--info);
+        }
+
+        .method-info h6 {
+            color: var(--dark);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e3e6f0;
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .info-value {
+            color: #6c757d;
+        }
+
+        .status-active {
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        .status-inactive {
+            color: var(--danger);
+            font-weight: 600;
+        }
+
+        .current-image {
+            text-align: center;
+            margin: 1rem 0;
+        }
+
+        .current-image img {
+            max-width: 150px;
+            max-height: 100px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: 2px solid #e3e6f0;
+        }
+
+        .no-image {
+            background: #f8f9fc;
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            color: #6c757d;
+        }
+
+        .upload-area {
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: center;
+            background: #f8f9fc;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 1rem;
+        }
+
+        .upload-area:hover {
+            border-color: var(--warning);
+            background: rgba(246, 194, 62, 0.05);
+        }
+
+        .upload-area.dragover {
+            border-color: var(--warning);
+            background: rgba(246, 194, 62, 0.1);
+        }
+
+        .upload-icon {
+            font-size: 2rem;
+            color: #6c757d;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-area:hover .upload-icon {
+            color: var(--warning);
+        }
+
+        .image-preview {
+            max-width: 150px;
+            max-height: 100px;
+            margin: 1rem auto;
+            display: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-text {
+            color: #6c757d;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-hint {
+            font-size: 0.8rem;
+            color: #8c94a0;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+            z-index: 5;
+        }
+
+        .select-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        @media (max-width: 576px) {
+            .form-container {
+                margin: 1rem auto;
+            }
+
+            .form-body {
+                padding: 1.5rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .info-item {
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="form-container">
+    <div class="form-card">
+        <!-- Header -->
+        <div class="page-header">
+            <div class="text-center">
+                <h1><i class="bi bi-pencil-square me-2"></i>Sửa phương thức thanh toán</h1>
+                <p class="mb-0">Cập nhật thông tin phương thức thanh toán</p>
+            </div>
+        </div>
+
+        <!-- Form Body -->
+        <div class="form-body">
+            <div class="form-icon">
+                <i class="bi bi-wallet2"></i>
+            </div>
+
+            <h2 class="form-title">Cập nhật thông tin</h2>
+            <p class="form-subtitle">Chỉnh sửa thông tin phương thức thanh toán hiện có</p>
+
+            <!-- Current Method Info -->
+            <div class="method-info">
+                <h6><i class="bi bi-info-circle me-2"></i>Thông tin hiện tại</h6>
+                <div class="info-item">
+                    <span class="info-label">ID:</span>
+                    <span class="info-value" th:text="${method.id}"></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Trạng thái hiện tại:</span>
+                    <span class="info-value" th:class="${method.status == 1} ? 'status-active' : 'status-inactive'"
+                          th:text="${method.status == 1} ? 'Đang hoạt động' : 'Đã ngừng hoạt động'">
+                        </span>
+                </div>
+            </div>
+
+            <form th:action="@{'/admin/paymentMethod/edit/' + ${method.id}}" method="post" enctype="multipart/form-data">
+                <!-- Tên phương thức -->
+                <div class="mb-4">
+                    <label class="form-label">Tên phương thức thanh toán</label>
+                    <div class="input-group">
+                        <input type="text" name="nameMethod" th:value="${method.nameMethod}"
+                               class="form-control" placeholder="Nhập tên phương thức thanh toán..."
+                               required maxlength="100">
+                        <div class="input-icon">
+                            <i class="bi bi-credit-card"></i>
+                        </div>
+                    </div>
+                    <div class="form-text">Tên phương thức thanh toán sẽ hiển thị cho người dùng khi thanh toán.</div>
+                </div>
+
+                <!-- Trạng thái -->
+                <div class="mb-4">
+                    <label class="form-label">Trạng thái hoạt động</label>
+                    <div class="input-group">
+                        <select name="status" class="form-select" required>
+                            <option value="">Chọn trạng thái...</option>
+                            <option value="1" th:selected="${method.status == 1}">🟢 Hoạt động</option>
+                            <option value="0" th:selected="${method.status == 0}">🔴 Ngừng hoạt động</option>
+                        </select>
+                        <div class="select-icon">
+                            <i class="bi bi-chevron-down"></i>
+                        </div>
+                    </div>
+                    <div class="form-text">
+                            <span th:if="${method.status == 1}" class="text-success">
+                                <i class="bi bi-check-circle"></i> Phương thức này đang được sử dụng
+                            </span>
+                        <span th:if="${method.status == 0}" class="text-danger">
+                                <i class="bi bi-exclamation-circle"></i> Phương thức này đã bị tạm ngừng
+                            </span>
+                    </div>
+                </div>
+
+                <!-- Ảnh hiện tại -->
+                <div class="mb-4">
+                    <label class="form-label">Ảnh hiện tại</label>
+                    <div class="current-image">
+                        <th:block th:if="${method.imageUrl != null}">
+                            <img th:src="${method.imageUrl}" alt="Logo hiện tại" class="img-fluid">
+                            <div class="form-text mt-2">Logo hiện tại của phương thức thanh toán</div>
+                        </th:block>
+                        <th:block th:if="${method.imageUrl == null}">
+                            <div class="no-image">
+                                <i class="bi bi-image display-4 text-muted"></i>
+                                <p class="mt-2 mb-0">Chưa có ảnh</p>
+                            </div>
+                        </th:block>
+                    </div>
+                </div>
+
+                <!-- Upload ảnh mới -->
+                <div class="mb-4">
+                    <label class="form-label">Cập nhật ảnh mới (tùy chọn)</label>
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-icon">
+                            <i class="bi bi-cloud-arrow-up"></i>
+                        </div>
+                        <div class="upload-text">Kéo thả ảnh vào đây hoặc click để chọn</div>
+                        <div class="upload-hint">PNG, JPG, SVG (Tối đa 2MB)</div>
+                        <input type="file" id="imageFile" name="imageFile" accept="image/*" class="file-input">
+                        <img id="imagePreview" class="image-preview" alt="Preview">
+                    </div>
+                    <div class="form-text">Để trống nếu không muốn thay đổi ảnh hiện tại.</div>
+                </div>
+
+                <div class="action-buttons">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle me-2"></i>Cập nhật
+                    </button>
+                    <a th:href="@{/admin/paymentMethod}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>Quay lại
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Additional Info -->
+    <div class="text-center text-muted mt-4">
+        <small>
+            <i class="bi bi-exclamation-triangle me-1"></i>
+            Thay đổi sẽ có hiệu lực ngay lập tức và ảnh hưởng đến người dùng khi thanh toán.
+        </small>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Elements
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('imageFile');
+    const imagePreview = document.getElementById('imagePreview');
+
+    // Click to select file
+    uploadArea.addEventListener('click', () => {
+        fileInput.click();
+    });
+
+    // Drag and drop functionality
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('dragover');
+    });
+
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+
+        if (e.dataTransfer.files.length) {
+            fileInput.files = e.dataTransfer.files;
+            handleFileSelect(e.dataTransfer.files[0]);
+        }
+    });
+
+    // File input change
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length) {
+            handleFileSelect(e.target.files[0]);
+        }
+    });
+
+    // Handle file selection
+    function handleFileSelect(file) {
+        // Check file type
+        if (!file.type.startsWith('image/')) {
+            alert('Vui lòng chọn file ảnh!');
+            return;
+        }
+
+        // Check file size (2MB)
+        if (file.size > 2 * 1024 * 1024) {
+            alert('File ảnh không được vượt quá 2MB!');
+            return;
+        }
+
+        // Preview image
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            imagePreview.src = e.target.result;
+            imagePreview.style.display = 'block';
+
+            // Update upload area text
+            const uploadText = uploadArea.querySelector('.upload-text');
+            const uploadHint = uploadArea.querySelector('.upload-hint');
+            uploadText.textContent = file.name;
+            uploadHint.textContent = `Kích thước: ${(file.size / 1024 / 1024).toFixed(2)}MB`;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // Focus vào input khi trang load
+    document.addEventListener('DOMContentLoaded', function() {
+        const nameInput = document.querySelector('input[name="nameMethod"]');
+        if (nameInput) {
+            nameInput.focus();
+            nameInput.select();
+        }
+    });
+
+    // Thêm hiệu ứng khi nhập liệu
+    const formInput = document.querySelector('input[name="nameMethod"]');
+    const formSelect = document.querySelector('select[name="status"]');
+
+    if (formInput) {
+        formInput.addEventListener('input', function() {
+            if (this.value.trim().length > 0) {
+                this.style.borderColor = '#4e73df';
+            } else {
+                this.style.borderColor = '#e3e6f0';
+            }
+        });
+    }
+
+    if (formSelect) {
+        formSelect.addEventListener('change', function() {
+            if (this.value !== '') {
+                this.style.borderColor = '#4e73df';
+            } else {
+                this.style.borderColor = '#e3e6f0';
+            }
+        });
+    }
+
+    // Hiển thị cảnh báo khi thay đổi trạng thái
+    formSelect.addEventListener('change', function() {
+        const originalStatus = [[${method.status}]];
+        const newStatus = this.value;
+
+        if (originalStatus != newStatus) {
+            if (newStatus == '0') {
+                if (!confirm('Bạn có chắc muốn ngừng hoạt động phương thức thanh toán này? Người dùng sẽ không thể chọn phương thức này khi thanh toán.')) {
+                    this.value = originalStatus;
+                }
+            }
+        }
+    });
+</script>
+</body>
+</html>

@@ -49,7 +49,7 @@ public class SeatStatusService {
 
         if (seat != null && seat.getStatus() == 0) {
             seat.setStatus(2);
-            seat.setHoldUntil(LocalDateTime.now().plusMinutes(10));
+            seat.setHoldUntil(LocalDateTime.now().plusMinutes(20));
             seat.setHoldBy(userId);
             seatStatusRepository.save(seat);
             return true;
