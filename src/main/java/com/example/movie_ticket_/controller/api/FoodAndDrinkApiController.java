@@ -16,6 +16,6 @@ public class FoodAndDrinkApiController {
 
     @GetMapping("/available")
     public List<FoodAndDrink> getAvailableCombos() {
-        return foodAndDrinkService.getAvailableCombos();
+        return foodAndDrinkService.getActiveCombos();
     }
 }

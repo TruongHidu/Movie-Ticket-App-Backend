@@ -16,7 +16,6 @@
         <th>Tên Combo</th>
         <th>Mô tả</th>
         <th>Ảnh</th>
-        <th>Số lượng</th>
         <th>Giá</th>
         <th>Trạng thái</th>
         <th>Hành động</th>
@@ -28,7 +27,6 @@
         <td th:text="${combo.nameCombo}"></td>
         <td th:text="${combo.descript}"></td>
         <td><img th:src="${combo.imageUrl}" alt="image" width="80"></td>
-        <td th:text="${combo.quantity}"></td>
         <td th:text="${combo.price}"></td>
         <td>
             <span th:text="${combo.status == 1 ? 'Hoạt động' : 'Ẩn'}"

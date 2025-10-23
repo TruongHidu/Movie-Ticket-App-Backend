@@ -24,9 +24,9 @@ public class FoodAndDrinkService {
         return  foodAndDrinkRepository.findByStatus(0);
     }
     // ✅ Mới: chỉ lấy combo đang hoạt động và còn hàng
-    public List<FoodAndDrink> getAvailableCombos() {
-        return foodAndDrinkRepository.findByStatusAndQuantityGreaterThan(1, 0);
-    }
+//    public List<FoodAndDrink> getAvailableCombos() {
+//        return foodAndDrinkRepository.findByStatusAndQuantityGreaterThan(1, 0);
+//    }
 
     public FoodAndDrink getById(Long id){
         return  foodAndDrinkRepository.findById(id).orElse(null);
@@ -44,7 +44,6 @@ public class FoodAndDrinkService {
         existing.setImageUrl(combo.getImageUrl());
         existing.setDescript(combo.getDescript());
         existing.setPrice(combo.getPrice());
-        existing.setQuantity(combo.getQuantity());
         existing.setStatus(combo.getStatus());
 
         return foodAndDrinkRepository.save(existing);

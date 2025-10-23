@@ -10,5 +10,5 @@ import java.util.List;
 public interface FoodAndDrinkRepository extends JpaRepository<FoodAndDrink, Long> {
     List<FoodAndDrink> findByStatus(int status);
 
-    List<FoodAndDrink> findByStatusAndQuantityGreaterThan(int status, int quantity);
+
 }

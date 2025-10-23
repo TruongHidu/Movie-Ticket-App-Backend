@@ -29,9 +29,6 @@ public class FoodAndDrink {
     @Column(name = "descript")
     private String descript;
 
-    @Column(name = "quantity")
-    private Integer quantity;
-
     @Column(name = "price", precision = 10, scale = 2, nullable = false)
     private BigDecimal price;
 

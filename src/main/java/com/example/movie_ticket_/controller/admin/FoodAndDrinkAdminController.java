@@ -63,7 +63,6 @@ public class FoodAndDrinkAdminController {
                         @RequestParam("nameCombo") String nameCombo,
                         @RequestParam("descript")String descript,
                         @RequestParam("price") BigDecimal price,
-                        @RequestParam("quantity") int quantity,
                         @RequestParam("status") int status,
                         @RequestParam(value = "imageFile", required = false) MultipartFile imageFile){
         try {
@@ -72,7 +71,6 @@ public class FoodAndDrinkAdminController {
                 combo.setNameCombo(nameCombo);
                 combo.setDescript(descript);
                 combo.setPrice(price);
-                combo.setQuantity(quantity);
                 combo.setStatus(status);
                 if (imageFile != null && !imageFile.isEmpty()) {
                     Map uploadResult = cloudinaryService.upload(imageFile);
