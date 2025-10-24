@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản lý Banner</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script>
+        // Hiển thị danh sách movie hoặc promotion tùy loại banner
+        function toggleTypeSelect() {
+            const type = document.getElementById("typeSelect").value;
+            document.getElementById("movieSelect").style.display = type === "MOVIE" ? "block" : "none";
+            document.getElementById("promotionSelect").style.display = type === "PROMOTION" ? "block" : "none";
+        }
+    </script>
+</head>
+<body class="bg-light">
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Quản lý Banner</h2>
+
+    <!-- FORM THÊM MỚI -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title">Thêm Banner Mới</h5>
+            <form th:action="@{/admin/banners/add}" method="post" enctype="multipart/form-data" th:object="${bannerRequest}">
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Loại Banner</label>
+                        <select id="typeSelect" class="form-select" name="type" onchange="toggleTypeSelect()" required>
+                            <option value="">-- Chọn loại --</option>
+                            <option value="MOVIE">Phim</option>
+                            <option value="PROMOTION">Khuyến mãi</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4" id="movieSelect" style="display:none;">
+                        <label class="form-label">Chọn phim</label>
+                        <select class="form-select" name="movieId">
+                            <option value="">-- Chọn phim --</option>
+                            <option th:each="movie : ${movies}"
+                                    th:value="${movie.idPhim}"
+                                    th:text="${movie.tenPhim}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4" id="promotionSelect" style="display:none;">
+                        <label class="form-label">Chọn khuyến mãi</label>
+                        <select class="form-select" name="promotionId">
+                            <option value="">-- Chọn khuyến mãi --</option>
+                            <option th:each="promo : ${promotions}"
+                                    th:value="${promo.id}"
+                                    th:text="${promo.title}">
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Ảnh banner</label>
+                        <input type="file" class="form-control" name="image" accept="image/*" required>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button class="btn btn-primary w-100" type="submit">Thêm Banner</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- DANH SÁCH BANNER -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title mb-3">Danh sách Banner</h5>
+            <table class="table table-striped align-middle text-center">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Loại</th>
+                    <th>Hình ảnh</th>
+                    <th>Phim / Khuyến mãi</th>
+                    <th>Trạng thái</th>
+                    <th>Hành động</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="banner : ${banners}">
+                    <td th:text="${banner.id}"></td>
+                    <td th:text="${banner.type}"></td>
+                    <td>
+                        <img th:src="${banner.imageUrl}" alt="Banner" style="width:120px;height:auto;">
+                    </td>
+                    <td>
+                        <span th:if="${banner.type.name() == 'MOVIE'}" th:text="'Phim ID: ' + ${banner.movieId}"></span>
+                        <span th:if="${banner.type.name() == 'PROMOTION'}" th:text="'KM ID: ' + ${banner.promotionId}"></span>
+                    </td>
+                    <td>
+                        <span th:text="${banner.status == 1 ? 'Hoạt động' : 'Ẩn'}"></span>
+                    </td>
+                    <td>
+                        <a th:href="@{'/admin/banners/delete/' + ${banner.id}}" class="btn btn-danger btn-sm"
+                           onclick="return confirm('Bạn có chắc muốn xóa banner này?')">Xóa</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>

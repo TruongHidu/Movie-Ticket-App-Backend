@@ -29,4 +29,21 @@ public class CloudinaryService {
             throw new RuntimeException("Upload error", e);
         }
     }
+
+    // Method upload vào thư mục con cụ thể
+    public Map uploadToFolder(MultipartFile file, String subFolder) {
+        try {
+            String folderPath = "movie_ticket_app/" + subFolder;
+
+            return cloudinary.uploader().upload(
+                    file.getBytes(),
+                    ObjectUtils.asMap(
+                            "folder", folderPath,
+                            "use_filename", true,
+                            "unique_filename", true,
+                            "resource_type", "auto"));
+        } catch (IOException e) {
+            throw new RuntimeException("Upload error to folder: " + subFolder, e);
+        }
+    }
 }
