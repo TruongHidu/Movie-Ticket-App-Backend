@@ -18,6 +18,8 @@ public class SeatTypeService {
         return seatTypeRepository.findAll();
     }
 
+
+
     public SeatType getById(String id) {
         return seatTypeRepository.findById(id).orElse(null);
     }

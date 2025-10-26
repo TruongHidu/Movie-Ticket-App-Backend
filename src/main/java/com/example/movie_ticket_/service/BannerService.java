@@ -25,6 +25,10 @@ public class BannerService {
                 .map(this::toResponse)
                 .collect(Collectors.toList());
     }
+    public List<Banner> getActiveBanners(){
+        return bannerRepository.findByStatus(1);
+    }
+
 
     @Transactional
     public BannerResponse create(BannerRequest request) {

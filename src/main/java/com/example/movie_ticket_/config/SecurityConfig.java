@@ -28,7 +28,11 @@ public class SecurityConfig {
                                 "/api/movies/**",
                                 "/api/schedules/**",
                                 "/api/payment-methods/**",
-                                "/api/food-drink/**"
+                                "/api/food-drink/**",
+                                "/api/promotion/**",
+                                "/api/banners/**",
+                                "/api/seat-types/**"
+
 
                         ).permitAll()
                         // Những API cần token
