@@ -36,7 +36,7 @@ public class FoodAndDrinkAdminController {
                       @RequestParam("imageFile")MultipartFile imageFile){
         try {
             if(imageFile != null && !imageFile.isEmpty()){
-                Map uploadResult = cloudinaryService.upload(imageFile);
+                Map uploadResult = cloudinaryService.uploadToFolder(imageFile,"food-and-drink");
                 String imageUrl = (String) uploadResult.get("secure_url");
                 combo.setImageUrl(imageUrl);
             }
@@ -73,7 +73,7 @@ public class FoodAndDrinkAdminController {
                 combo.setPrice(price);
                 combo.setStatus(status);
                 if (imageFile != null && !imageFile.isEmpty()) {
-                    Map uploadResult = cloudinaryService.upload(imageFile);
+                    Map uploadResult = cloudinaryService.uploadToFolder(imageFile,"food-and-drink");
                     combo.setImageUrl((String) uploadResult.get("secure_url"));
                 }
 

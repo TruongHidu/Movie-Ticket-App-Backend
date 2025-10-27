@@ -36,7 +36,7 @@ public class PaymentMethodAdminController {
                       @RequestParam("imageFile") MultipartFile imageFile) {
         try {
             if (imageFile != null && !imageFile.isEmpty()) {
-                Map uploadResult = cloudinaryService.upload(imageFile);
+                Map uploadResult = cloudinaryService.uploadToFolder(imageFile,"payment-Methods");
                 String imageUrl = (String) uploadResult.get("secure_url");
                 method.setImageUrl(imageUrl);
             }
@@ -69,7 +69,7 @@ public class PaymentMethodAdminController {
                 method.setStatus(status);
 
                 if (imageFile != null && !imageFile.isEmpty()) {
-                    Map uploadResult = cloudinaryService.upload(imageFile);
+                    Map uploadResult = cloudinaryService.uploadToFolder(imageFile, "payment-Methods");
                     String imageUrl = (String) uploadResult.get("secure_url");
                     method.setImageUrl(imageUrl);
                 }

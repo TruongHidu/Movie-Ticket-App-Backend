@@ -8,6 +8,7 @@ import com.example.movie_ticket_.repository.PromotionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,6 +31,7 @@ public class PromotionService {
     }
 
     public Promotion createPromotion(Promotion promotion) {
+        promotion.setCreatedAt(LocalDateTime.now());
         return promotionRepository.save(promotion);
     }
 
@@ -46,6 +48,11 @@ public class PromotionService {
 
             return promotionRepository.save(promotion);
         }).orElseThrow(() -> new RuntimeException("Promotion not found"));
+    }
+
+    public Promotion getPromotionById(long id){
+        return promotionRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Movie with id " + id + " not found"));
     }
 
     public void deletePromotion(Long id) {

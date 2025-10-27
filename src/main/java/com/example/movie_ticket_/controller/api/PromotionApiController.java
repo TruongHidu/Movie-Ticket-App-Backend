@@ -3,7 +3,9 @@ package com.example.movie_ticket_.controller.api;
 import com.example.movie_ticket_.entity.Promotion;
 import com.example.movie_ticket_.service.PromotionService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -18,5 +20,11 @@ public class PromotionApiController {
     @GetMapping("/active")
     public List<Promotion> getActivePromotion(){
         return promotionService.getActivePromotions();
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Promotion> getPromotionById(@PathVariable int id){
+        Promotion promotion = promotionService.getPromotionById(id);
+        return ResponseEntity.ok(promotion);
     }
 }

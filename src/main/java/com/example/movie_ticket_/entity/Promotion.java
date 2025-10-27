@@ -3,6 +3,8 @@ package com.example.movie_ticket_.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "promotion")
 @Getter
@@ -23,6 +25,9 @@ public class Promotion {
 
     @Column(name = "image_url", nullable = false)
     private String imageUrl;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
     // 1 = đang hoạt động, 0 = đã ẩn
     private int status = 1;

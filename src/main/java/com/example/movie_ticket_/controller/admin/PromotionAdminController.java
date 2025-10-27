@@ -37,7 +37,7 @@ public class PromotionAdminController {
     public String addPromotion(@ModelAttribute Promotion promotion,
                                @RequestParam("image") MultipartFile image) {
         if (!image.isEmpty()) {
-            Map uploadResult = cloudinaryService.upload(image);
+            Map uploadResult = cloudinaryService.uploadToFolder(image, "promotions");
             promotion.setImageUrl((String) uploadResult.get("secure_url"));
         }
         promotionService.createPromotion(promotion);
@@ -59,7 +59,7 @@ public class PromotionAdminController {
                                   @ModelAttribute Promotion promotion,
                                   @RequestParam("image") MultipartFile image) {
         if (!image.isEmpty()) {
-            Map uploadResult = cloudinaryService.upload(image);
+            Map uploadResult = cloudinaryService.uploadToFolder(image,"promotions");
             promotion.setImageUrl((String) uploadResult.get("secure_url"));
         }
         promotionService.updatePromotion(id, promotion);

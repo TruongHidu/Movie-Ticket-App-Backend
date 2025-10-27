@@ -111,7 +111,7 @@ public class MovieService {
 
     // Upload ảnh lên Cloudinary
     private String uploadPoster(MultipartFile posterFile) {
-        Map<?, ?> uploadResult = cloudinaryService.upload(posterFile);
+        Map<?, ?> uploadResult = cloudinaryService.uploadToFolder(posterFile,"movies");
         System.out.println("Cloudinary upload result: " + uploadResult);
         return uploadResult.get("secure_url").toString();
     }
