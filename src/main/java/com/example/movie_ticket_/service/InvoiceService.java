@@ -1,0 +1,189 @@
+package com.example.movie_ticket_.service;
+
+import com.example.movie_ticket_.config.VNPAYConfig;
+import com.example.movie_ticket_.dto.InvoiceRequest;
+import com.example.movie_ticket_.entity.*;
+import com.example.movie_ticket_.repository.*;
+import com.example.movie_ticket_.security.VNPayUtil;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class InvoiceService {
+
+    private final InvoiceRepository invoiceRepository;
+    private final UserRepository userRepository;
+    private final ScheduleRepository scheduleRepository;
+    private final PaymentMethodRepository paymentMethodRepository;
+    private final SeatStatusRepository seatStatusRepository;
+
+
+    public List<String> checkSeatsAvailability(Long scheduleId, List<String> seatCodes) {
+        List<SeatStatus> seatStatuses = seatStatusRepository.findByScheduleAndSeatCodes(scheduleId, seatCodes);
+        LocalDateTime now = LocalDateTime.now();
+
+        return seatStatuses.stream()
+                .filter(s -> s.getStatus() == 1 ||
+                        (s.getStatus() == 2 && s.getHoldUntil() != null && s.getHoldUntil().isAfter(now)))
+                .map(s -> s.getSeatNumber().getId().getIdGhe())
+                .collect(Collectors.toList());
+    }
+
+
+    public void updateSeatStatus(Long scheduleId, List<String> seatCodes, Long userId) {
+        List<SeatStatus> seatStatuses = seatStatusRepository.findByScheduleAndSeatCodes(scheduleId, seatCodes);
+        LocalDateTime now = LocalDateTime.now();
+
+        for (SeatStatus seatStatus : seatStatuses) {
+            // Chỉ cập nhật ghế trống (status = 0) hoặc ghế đang giữ nhưng hết hạn
+            if (seatStatus.getStatus() == 0 ||
+                    (seatStatus.getStatus() == 2 && seatStatus.getHoldUntil() != null && seatStatus.getHoldUntil().isBefore(now))) {
+
+                seatStatus.setStatus(2); // Đang giữ
+                seatStatus.setHoldUntil(now.plusMinutes(15)); // Giữ trong 15 phút
+                seatStatus.setHoldBy(userId);
+                seatStatusRepository.save(seatStatus);
+            }
+        }
+    }
+
+    public void releaseSeats(Long scheduleId, List<String> seatCodes) {
+        List<SeatStatus> seatStatuses = seatStatusRepository.findByScheduleAndSeatCodes(scheduleId, seatCodes);
+
+        for (SeatStatus seatStatus : seatStatuses) {
+            if (seatStatus.getStatus() == 2) { // Chỉ cập nhật ghế đang giữ
+                seatStatus.setStatus(0); // Trở về trạng thái trống
+                seatStatus.setHoldUntil(null);
+                seatStatus.setHoldBy(null);
+                seatStatusRepository.save(seatStatus);
+            }
+        }
+    }
+
+
+    public Invoice createInvoice(InvoiceRequest request) {
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy user"));
+
+        Schedule schedule = scheduleRepository.findById(request.getScheduleId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy lịch chiếu"));
+
+
+        PaymentMethod paymentMethod= paymentMethodRepository.findById(request.getPaymentMethodId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy payment"));
+
+        List<String> seatCodeList = Arrays.asList(request.getSeatCodes().split(","));
+        updateSeatStatus(request.getScheduleId(), seatCodeList, request.getUserId());
+        // ✅ Trừ điểm đã dùng
+        int usedPoint = request.getUsedPoint();
+
+        // ✅ Cộng điểm thưởng mới (tuỳ chỉnh theo quy tắc, ví dụ: 1% giá trị đơn hàng)
+        int rewardPoints = request.getTotalPrice().intValue() / 100; // ví dụ 1%
+
+
+
+
+        Invoice invoice = Invoice.builder()
+                .user(user)
+                .schedule(schedule)
+                .movieName(schedule.getMovie().getTenPhim())
+                .roomName(schedule.getRoom().getTenPhongChieu())
+                .showDate(schedule.getNgayChieu())
+                .showTime(schedule.getShowTime().getKhungGio())
+                .seatCodes(request.getSeatCodes())
+                .foodDrinks(request.getFoodDrinks())
+                .paymentMethodId(paymentMethod.getId())
+                .totalPrice(request.getTotalPrice())
+                .usedPoint(usedPoint)
+                .createdAt(LocalDateTime.now())
+                .bonusPoint(rewardPoints)
+                .build();
+
+        return invoiceRepository.save(invoice);
+    }
+
+    public List<Invoice> getInvoicesByUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy user"));
+        return invoiceRepository.findByUser(user);
+    }
+
+    public List<Invoice> getAllInvoices() {
+        return invoiceRepository.findAll();
+    }
+
+    public void deleteInvoice(Long id) {
+        invoiceRepository.deleteById(id);
+    }
+
+    public Map<String, String> createInvoiceAndPaymentWithVNPay(InvoiceRequest request) throws Exception {
+        // 1️⃣ Tạo hóa đơn pending
+        Invoice invoice = createInvoice(request); // dùng logic bạn đã có
+        invoice.setStatus(0); // PENDING
+        invoiceRepository.save(invoice);
+
+        // 2️⃣ Tạo URL VNPay
+        String vnp_TxnRef = String.valueOf(invoice.getId()); // mã hóa đơn
+        String vnp_TmnCode = VNPAYConfig.vnp_TmnCode;
+        String vnp_HashSecret = VNPAYConfig.vnp_HashSecret;
+        String vnp_Url = VNPAYConfig.vnp_Url;
+        String vnp_ReturnUrl = VNPAYConfig.vnp_ReturnUrl;
+
+        String vnp_Version = VNPAYConfig.vnp_Version;
+        String vnp_Command = VNPAYConfig.vnp_Command;
+        String orderType = VNPAYConfig.orderType;
+        String amount = String.valueOf(invoice.getTotalPrice().multiply(BigDecimal.valueOf(100)).intValue());
+
+        Map<String, String> vnp_Params = new HashMap<>();
+        vnp_Params.put("vnp_Version", vnp_Version);
+        vnp_Params.put("vnp_Command", vnp_Command);
+        vnp_Params.put("vnp_TmnCode", vnp_TmnCode);
+        vnp_Params.put("vnp_Amount", amount);
+        vnp_Params.put("vnp_CurrCode", "VND");
+        vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
+        vnp_Params.put("vnp_OrderInfo", "Thanh toan ve xem phim #" + vnp_TxnRef);
+        vnp_Params.put("vnp_OrderType", orderType);
+        vnp_Params.put("vnp_Locale", "vn");
+        vnp_Params.put("vnp_ReturnUrl", vnp_ReturnUrl);
+        vnp_Params.put("vnp_IpAddr", "127.0.0.1");
+        vnp_Params.put("vnp_CreateDate", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
+
+        // Sắp xếp và tạo hash
+        List<String> fieldNames = new ArrayList<>(vnp_Params.keySet());
+        Collections.sort(fieldNames);
+        StringBuilder hashData = new StringBuilder();
+        StringBuilder query = new StringBuilder();
+        for (String fieldName : fieldNames) {
+            String fieldValue = vnp_Params.get(fieldName);
+            if (fieldValue != null && fieldValue.length() > 0) {
+                hashData.append(fieldName).append('=').append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII));
+                query.append(URLEncoder.encode(fieldName, StandardCharsets.US_ASCII)).append('=')
+                        .append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII));
+                if (!fieldName.equals(fieldNames.get(fieldNames.size() - 1))) {
+                    hashData.append('&');
+                    query.append('&');
+                }
+            }
+        }
+
+        String vnp_SecureHash = VNPayUtil.hmacSHA512(vnp_HashSecret, hashData.toString());
+        query.append("&vnp_SecureHash=").append(vnp_SecureHash);
+
+        String paymentUrl = vnp_Url + "?" + query.toString();
+
+        // 3️⃣ Trả kết quả
+        Map<String, String> result = new HashMap<>();
+        result.put("invoiceId", String.valueOf(invoice.getId()));
+        result.put("paymentUrl", paymentUrl);
+        return result;
+    }
+}

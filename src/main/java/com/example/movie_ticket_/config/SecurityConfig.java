@@ -31,12 +31,13 @@ public class SecurityConfig {
                                 "/api/food-drink/**",
                                 "/api/promotion/**",
                                 "/api/banners/**",
-                                "/api/seat-types/**"
+                                "/api/seat-types/**",
+                                "/api/payment/**"
 
 
                         ).permitAll()
                         // Những API cần token
-                        .requestMatchers("/api/seats/**").authenticated()
+                        .requestMatchers("/api/seats/**",  "/api/invoices/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
