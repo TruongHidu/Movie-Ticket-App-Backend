@@ -76,4 +76,8 @@ public class Invoice {
     @Column(name = "payment_time")
     private LocalDateTime paymentTime;
 
+    @Column(name = "barcode_url", columnDefinition = "TEXT")
+    private String barcodeUrl;
+
+
 }

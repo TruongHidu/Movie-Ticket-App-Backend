@@ -5,8 +5,12 @@ import com.example.movie_ticket_.dto.InvoiceRequest;
 import com.example.movie_ticket_.entity.*;
 import com.example.movie_ticket_.repository.*;
 import com.example.movie_ticket_.security.VNPayUtil;
+import com.example.movie_ticket_.util.BarcodeGenerator;
+import com.example.movie_ticket_.util.ByteArrayMultipartFile;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
 
 import java.math.BigDecimal;
 import java.net.URLEncoder;
@@ -25,6 +29,8 @@ public class InvoiceService {
     private final ScheduleRepository scheduleRepository;
     private final PaymentMethodRepository paymentMethodRepository;
     private final SeatStatusRepository seatStatusRepository;
+    private final BarcodeGenerator barcodeGenerator;
+    private final CloudinaryService cloudinaryService;
 
 
     public List<String> checkSeatsAvailability(Long scheduleId, List<String> seatCodes) {
@@ -71,27 +77,27 @@ public class InvoiceService {
 
 
     public Invoice createInvoice(InvoiceRequest request) {
+        // 1️⃣ Tìm user
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy user"));
 
+        // 2️⃣ Tìm lịch chiếu
         Schedule schedule = scheduleRepository.findById(request.getScheduleId())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy lịch chiếu"));
 
-
-        PaymentMethod paymentMethod= paymentMethodRepository.findById(request.getPaymentMethodId())
+        // 3️⃣ Tìm phương thức thanh toán
+        PaymentMethod paymentMethod = paymentMethodRepository.findById(request.getPaymentMethodId())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy payment"));
 
+        // 4️⃣ Cập nhật trạng thái ghế
         List<String> seatCodeList = Arrays.asList(request.getSeatCodes().split(","));
         updateSeatStatus(request.getScheduleId(), seatCodeList, request.getUserId());
-        // ✅ Trừ điểm đã dùng
+
+        // 5️⃣ Điểm thưởng
         int usedPoint = request.getUsedPoint();
+        int rewardPoints = request.getTotalPrice().intValue() / 100; // Ví dụ: 1% tổng giá
 
-        // ✅ Cộng điểm thưởng mới (tuỳ chỉnh theo quy tắc, ví dụ: 1% giá trị đơn hàng)
-        int rewardPoints = request.getTotalPrice().intValue() / 100; // ví dụ 1%
-
-
-
-
+        // 6️⃣ Tạo đối tượng Invoice
         Invoice invoice = Invoice.builder()
                 .user(user)
                 .schedule(schedule)
@@ -108,7 +114,38 @@ public class InvoiceService {
                 .bonusPoint(rewardPoints)
                 .build();
 
-        return invoiceRepository.save(invoice);
+        // 7️⃣ Lưu trước để có ID (hoặc transaction_no)
+        invoice = invoiceRepository.save(invoice);
+
+        try {
+            // 8️⃣ Sinh mã barcode từ ID hoặc mã hóa đơn
+            String barcodeText = "INV-" + invoice.getId() + "-" + System.currentTimeMillis();
+
+            byte[] barcodeBytes = barcodeGenerator.generateBarcodeImage(barcodeText);
+
+            // 9️⃣ Chuyển sang MultipartFile để upload Cloudinary
+            MultipartFile barcodeFile = new ByteArrayMultipartFile(
+                    "barcode",
+                    "barcode.png",
+                    "image/png",
+                    barcodeBytes
+            );
+
+
+            // 10️⃣ Upload lên Cloudinary (thư mục barcodes)
+            Map uploadResult = cloudinaryService.uploadToFolder(barcodeFile, "barcodes");
+            String barcodeUrl = uploadResult.get("secure_url").toString();
+
+            // 11️⃣ Cập nhật lại hóa đơn với link barcode
+            invoice.setBarcodeUrl(barcodeUrl);
+            invoiceRepository.save(invoice);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Có thể log hoặc ném lỗi tuỳ ý
+        }
+
+        return invoice;
     }
 
     public List<Invoice> getInvoicesByUser(Long userId) {
@@ -130,6 +167,17 @@ public class InvoiceService {
         Invoice invoice = createInvoice(request); // dùng logic bạn đã có
         invoice.setStatus(0); // PENDING
         invoiceRepository.save(invoice);
+
+
+
+        List<String> seatCodes = List.of(invoice.getSeatCodes().split(","));
+        List<SeatStatus> seatStatuses = seatStatusRepository.findByScheduleAndSeatCodes(invoice.getSchedule().getIdLichChieu(), seatCodes);
+        for (SeatStatus s : seatStatuses) {
+            s.setStatus(2); // 2 = đã giữ
+            s.setHoldBy(invoice.getId());
+            s.setHoldUntil(LocalDateTime.now().plusMinutes(20));
+        }
+
 
         // 2️⃣ Tạo URL VNPay
         String vnp_TxnRef = String.valueOf(invoice.getId()); // mã hóa đơn

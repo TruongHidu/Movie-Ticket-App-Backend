@@ -6,6 +6,7 @@ import com.example.movie_ticket_.entity.User;
 import com.example.movie_ticket_.repository.InvoiceRepository;
 import com.example.movie_ticket_.repository.SeatStatusRepository;
 import com.example.movie_ticket_.repository.UserRepository;
+import com.example.movie_ticket_.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +23,7 @@ public class PaymentApiController {
     private final InvoiceRepository invoiceRepository;
     private final UserRepository userRepository;
     private final SeatStatusRepository seatStatusRepository;
+    private final EmailService emailService;
 
     @GetMapping("/vnpay-return")
     public ResponseEntity<String> handleVNPayReturn(
@@ -37,6 +39,8 @@ public class PaymentApiController {
 
         if ("00".equals(responseCode)) {
             User user = invoice.getUser();
+            System.out.println("Sending email to: " + user.getEmail());
+
 
             int usedPoint = invoice.getUsedPoint();
             if (usedPoint > 0) {
@@ -62,6 +66,12 @@ public class PaymentApiController {
             invoice.setTransactionNo(transactionNo);
             invoice.setPaymentTime(LocalDateTime.now());
             invoiceRepository.save(invoice);
+            // Trong service xử lý thanh toán thành công
+            emailService.sendSuccessPayment(
+                    user.getEmail(),
+                    user.getName(),
+                    invoice
+            );
             return ResponseEntity.ok("Payment success for invoice " + txnRef);
         } else {
             invoice.setStatus(2); // FAILED
