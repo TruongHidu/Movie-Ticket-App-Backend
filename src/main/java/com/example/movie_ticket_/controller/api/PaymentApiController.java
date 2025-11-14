@@ -6,10 +6,14 @@ import com.example.movie_ticket_.entity.User;
 import com.example.movie_ticket_.repository.InvoiceRepository;
 import com.example.movie_ticket_.repository.SeatStatusRepository;
 import com.example.movie_ticket_.repository.UserRepository;
+import com.example.movie_ticket_.service.CloudinaryService;
 import com.example.movie_ticket_.service.EmailService;
+import com.example.movie_ticket_.util.BarcodeGenerator;
+import com.example.movie_ticket_.util.ByteArrayMultipartFile;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,6 +28,8 @@ public class PaymentApiController {
     private final UserRepository userRepository;
     private final SeatStatusRepository seatStatusRepository;
     private final EmailService emailService;
+    private final BarcodeGenerator barcodeGenerator;
+    private final CloudinaryService cloudinaryService;
 
     @GetMapping("/vnpay-return")
     public ResponseEntity<String> handleVNPayReturn(
@@ -60,6 +66,32 @@ public class PaymentApiController {
                 s.setStatus(1); // 1 = đã đặt
                 s.setHoldBy(user.getId());
                 s.setHoldUntil(null);
+            }
+            try {
+                // 8️⃣ Sinh mã barcode từ ID hoặc mã hóa đơn
+                String barcodeText = "INV-" + invoice.getId() + "-" + System.currentTimeMillis();
+
+                byte[] barcodeBytes = barcodeGenerator.generateBarcodeImage(barcodeText);
+
+                // 9️⃣ Chuyển sang MultipartFile để upload Cloudinary
+                MultipartFile barcodeFile = new ByteArrayMultipartFile(
+                        "barcode",
+                        "barcode.png",
+                        "image/png",
+                        barcodeBytes
+                );
+
+
+                // 10️⃣ Upload lên Cloudinary (thư mục barcodes)
+                Map uploadResult = cloudinaryService.uploadToFolder(barcodeFile, "barcodes");
+                String barcodeUrl = uploadResult.get("secure_url").toString();
+
+                // 11️⃣ Cập nhật lại hóa đơn với link barcode
+                invoice.setBarcodeUrl(barcodeUrl);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                // Có thể log hoặc ném lỗi tuỳ ý
             }
 
             invoice.setStatus(1); // PAID

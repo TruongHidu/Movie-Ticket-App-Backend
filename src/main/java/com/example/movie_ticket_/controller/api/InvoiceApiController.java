@@ -2,6 +2,7 @@ package com.example.movie_ticket_.controller.api;
 
 
 import com.example.movie_ticket_.dto.CheckSeatRequest;
+import com.example.movie_ticket_.dto.InvoiceDTO;
 import com.example.movie_ticket_.dto.InvoiceRequest;
 import com.example.movie_ticket_.entity.Invoice;
 import com.example.movie_ticket_.service.InvoiceService;
@@ -47,15 +48,18 @@ public class InvoiceApiController {
     }
 
 
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Invoice>> getInvoicesByUser(@PathVariable Long userId) {
-        return ResponseEntity.ok(invoiceService.getInvoicesByUser(userId));
+    @GetMapping("/my-invoices")
+    public ResponseEntity<?> getMyInvoices(org.springframework.security.core.Authentication authentication) {
+        if (authentication == null || authentication.getName() == null) {
+            return ResponseEntity.status(401).body(Map.of("message", "Unauthorized"));
+        }
+
+        String email = authentication.getName(); // ✅ Lấy từ JWT subject
+        return ResponseEntity.ok(invoiceService.getInvoicesByEmail(email));
     }
 
-    @GetMapping
-    public ResponseEntity<List<Invoice>> getAllInvoices() {
-        return ResponseEntity.ok(invoiceService.getAllInvoices());
-    }
+
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteInvoice(@PathVariable Long id) {

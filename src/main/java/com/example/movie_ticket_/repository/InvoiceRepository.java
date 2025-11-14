@@ -13,6 +13,6 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
     List<Invoice> findByUserId(Long userId);
 
     // Tùy chọn thêm: tìm theo trạng thái
-    List<Invoice> findByStatus(int status);
+    List<Invoice> findByUserIdAndStatusOrderByPaymentTimeDesc(Long userId, int status);
     List<Invoice> findByUser(User user);
 }

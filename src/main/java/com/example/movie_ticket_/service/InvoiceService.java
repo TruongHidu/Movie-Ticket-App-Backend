@@ -1,6 +1,7 @@
 package com.example.movie_ticket_.service;
 
 import com.example.movie_ticket_.config.VNPAYConfig;
+import com.example.movie_ticket_.dto.InvoiceDTO;
 import com.example.movie_ticket_.dto.InvoiceRequest;
 import com.example.movie_ticket_.entity.*;
 import com.example.movie_ticket_.repository.*;
@@ -29,8 +30,45 @@ public class InvoiceService {
     private final ScheduleRepository scheduleRepository;
     private final PaymentMethodRepository paymentMethodRepository;
     private final SeatStatusRepository seatStatusRepository;
-    private final BarcodeGenerator barcodeGenerator;
-    private final CloudinaryService cloudinaryService;
+
+    public List<InvoiceDTO> getInvoicesByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        List<Invoice> invoices = invoiceRepository.findByUserIdAndStatusOrderByPaymentTimeDesc(user.getId(), 1);
+
+        return invoices.stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+    }
+
+
+    private InvoiceDTO mapToDTO(Invoice invoice) {
+        // 🔹 Lấy tên phương thức thanh toán
+        String paymentMethodName = null;
+        if (invoice.getPaymentMethodId() != 0) {
+            PaymentMethod method = paymentMethodRepository.findById(invoice.getPaymentMethodId()).orElse(null);
+            if (method != null) paymentMethodName = method.getNameMethod();
+        }
+
+        return InvoiceDTO.builder()
+                .id(invoice.getId())
+                .movieName(invoice.getMovieName())
+                .roomName(invoice.getRoomName())
+                .showDate(invoice.getShowDate())
+                .showTime(invoice.getShowTime())
+                .seatCodes(invoice.getSeatCodes())
+                .foodDrinks(invoice.getFoodDrinks())
+                .paymentMethod(paymentMethodName)
+                .totalPrice(invoice.getTotalPrice())
+                .usedPoint(invoice.getUsedPoint())
+                .bonusPoint(invoice.getBonusPoint())
+                .paymentTime(invoice.getPaymentTime())
+                .barcodeUrl(invoice.getBarcodeUrl())
+                .build();
+    }
+
+
 
 
     public List<String> checkSeatsAvailability(Long scheduleId, List<String> seatCodes) {
@@ -93,6 +131,8 @@ public class InvoiceService {
         List<String> seatCodeList = Arrays.asList(request.getSeatCodes().split(","));
         updateSeatStatus(request.getScheduleId(), seatCodeList, request.getUserId());
 
+
+
         // 5️⃣ Điểm thưởng
         int usedPoint = request.getUsedPoint();
         int rewardPoints = request.getTotalPrice().intValue() / 100; // Ví dụ: 1% tổng giá
@@ -115,35 +155,7 @@ public class InvoiceService {
                 .build();
 
         // 7️⃣ Lưu trước để có ID (hoặc transaction_no)
-        invoice = invoiceRepository.save(invoice);
-
-        try {
-            // 8️⃣ Sinh mã barcode từ ID hoặc mã hóa đơn
-            String barcodeText = "INV-" + invoice.getId() + "-" + System.currentTimeMillis();
-
-            byte[] barcodeBytes = barcodeGenerator.generateBarcodeImage(barcodeText);
-
-            // 9️⃣ Chuyển sang MultipartFile để upload Cloudinary
-            MultipartFile barcodeFile = new ByteArrayMultipartFile(
-                    "barcode",
-                    "barcode.png",
-                    "image/png",
-                    barcodeBytes
-            );
-
-
-            // 10️⃣ Upload lên Cloudinary (thư mục barcodes)
-            Map uploadResult = cloudinaryService.uploadToFolder(barcodeFile, "barcodes");
-            String barcodeUrl = uploadResult.get("secure_url").toString();
-
-            // 11️⃣ Cập nhật lại hóa đơn với link barcode
-            invoice.setBarcodeUrl(barcodeUrl);
-            invoiceRepository.save(invoice);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            // Có thể log hoặc ném lỗi tuỳ ý
-        }
+        invoiceRepository.save(invoice);
 
         return invoice;
     }

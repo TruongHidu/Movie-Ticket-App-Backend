@@ -1,10 +1,14 @@
 package com.example.movie_ticket_.service;
 
+import com.example.movie_ticket_.entity.Invoice;
 import com.example.movie_ticket_.entity.PaymentMethod;
 import com.example.movie_ticket_.repository.PaymentMethodRepository;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import lombok.AllArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import java.time.format.DateTimeFormatter;
@@ -29,100 +33,80 @@ public class EmailService {
     }
 
 
-    public void sendSuccessPayment(String toEmail, String customerName, String reservationCode,
-                                   String movieName, String theater, String hall,
-                                   String sessionTime, String seats, String foodDrinks,
-                                   String paymentMethod, String paymentTime, String totalAmount) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(toEmail);
-        message.setSubject("[AlphaCinema - Thông tin vé phim] - Đặt vé trực tuyến thành công / Your online ticket purchase has been successful");
+    public void sendSuccessPayment(String toEmail, String customerName, Invoice invoice) {
+        try {
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
 
-        String emailContent = buildEmailContent(customerName, reservationCode, movieName,
-                                                hall, sessionTime, seats, foodDrinks, paymentMethod,
-                                                paymentTime, totalAmount);
+            PaymentMethod paymentMethod = paymentMethodRepository.findById(invoice.getPaymentMethodId())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy payment"));
 
-        message.setText(emailContent);
-        mailSender.send(message);
+            String sessionTime = invoice.getShowDate() + " " + invoice.getShowTime();
+            String paymentTimeStr = invoice.getPaymentTime() != null
+                    ? invoice.getPaymentTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"))
+                    : "";
+            String totalAmountStr = invoice.getTotalPrice() != null
+                    ? String.format("%,.0f VND", invoice.getTotalPrice())
+                    : "0 VND";
+
+            // ✅ Thêm dòng ảnh barcode
+            String barcodeImageHtml = "";
+            if (invoice.getBarcodeUrl() != null && !invoice.getBarcodeUrl().isEmpty()) {
+                barcodeImageHtml = """
+                    <div style="text-align:center; margin-top:20px;">
+                        <p style="font-weight:bold; color:#333;">Mã vạch (Barcode)</p>
+                        <img src="%s" alt="Barcode" style="max-width:250px; height:auto; border:1px solid #ddd; padding:5px; border-radius:6px;">
+                    </div>
+                    """.formatted(invoice.getBarcodeUrl());
+            }
+
+            String emailContent = """
+                    <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #222;">
+                        <h2 style="text-align:center; color:#b21f2d;">AlphaCinema - Xác nhận đặt vé thành công</h2>
+                        <p>Xin chào <b>%s</b>,</p>
+                        <p>Cảm ơn bạn đã đặt vé tại <b>AlphaCinema</b>!</p>
+                        <table style="width:100%%; border-collapse:collapse; font-size:14px;">
+                            <tr><td style="width:220px; font-weight:bold;">Mã vé (Reservation Code):</td><td>%s</td></tr>
+                            <tr><td style="font-weight:bold;">Phim (Movie):</td><td>%s</td></tr>
+                            <tr><td style="font-weight:bold;">Phòng chiếu (Hall):</td><td>%s</td></tr>
+                            <tr><td style="font-weight:bold;">Thời gian (Session):</td><td>%s</td></tr>
+                            <tr><td style="font-weight:bold;">Ghế (Seats):</td><td>%s</td></tr>
+                            %s
+                            <tr><td style="font-weight:bold;">Phương thức thanh toán:</td><td>%s</td></tr>
+                            <tr><td style="font-weight:bold;">Thời gian thanh toán:</td><td>%s</td></tr>
+                            <tr><td style="font-weight:bold;">Tổng tiền:</td><td><b style="color:#d32f2f;">%s</b></td></tr>
+                        </table>
+                        %s
+                        <br>
+                        <p style="text-align:center;">Chúc bạn xem phim vui vẻ! 🍿</p>
+                        <p style="text-align:center; font-size:13px; color:gray;">AlphaCinema Team</p>
+                    </div>
+                    """.formatted(
+                    customerName,
+                    invoice.getTransactionNo() != null ? invoice.getTransactionNo() : String.valueOf(invoice.getId()),
+                    invoice.getMovieName(),
+                    invoice.getRoomName(),
+                    sessionTime,
+                    invoice.getSeatCodes(),
+                    (invoice.getFoodDrinks() != null && !invoice.getFoodDrinks().isEmpty())
+                            ? "<tr><td style='font-weight:bold;'>Combo (Food):</td><td>" + invoice.getFoodDrinks() + "</td></tr>"
+                            : "",
+                    paymentMethod.getNameMethod(),
+                    paymentTimeStr,
+                    totalAmountStr,
+                    barcodeImageHtml // ✅ hiển thị ảnh barcode
+            );
+
+            helper.setTo(toEmail);
+            helper.setSubject("[AlphaCinema] - Xác nhận đặt vé thành công");
+            helper.setText(emailContent, true); // true = HTML
+            mailSender.send(mimeMessage);
+
+        } catch (MessagingException e) {
+            throw new RuntimeException("Gửi email thất bại", e);
+        }
     }
 
-    private String buildEmailContent(String customerName, String reservationCode, String movieName,
-                                     String hall, String sessionTime, String seats,
-                                     String foodDrinks, String paymentMethod, String paymentTime,
-                                     String totalAmount) {
-
-        DateTimeFormatter displayFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
-
-        StringBuilder content = new StringBuilder();
-
-        // Tiếng Việt
-        content.append("# Xin chào ").append(customerName).append(" / Hello ").append(customerName).append("\n\n");
-
-        content.append("Mã vé (Reservation code):\n");
-        content.append(reservationCode).append("\n\n");
-
-        content.append("Phim (Movie):\n");
-        content.append(movieName).append("\n\n");
-
-        content.append("Phòng chiếu (Hall):\n");
-        content.append(hall).append("\n\n");
-
-        content.append("Thời gian (Session):\n");
-        content.append(sessionTime).append("\n\n");
-
-        content.append("Ghế (Seat):\n");
-        content.append(seats).append("\n\n");
-
-        content.append("Đồ ăn (Food):\n");
-        content.append(foodDrinks != null && !foodDrinks.isEmpty() ? foodDrinks : "").append("\n\n");
-
-        content.append("Phương thức thanh toán (Payment method): **").append(paymentMethod).append("**\n\n");
-
-        content.append("Thời gian thanh toán (Payment Time):\n");
-        content.append(paymentTime).append("\n\n");
-
-        content.append("Tổng tiền (Total):\n");
-        content.append(totalAmount).append(" VND\n\n");
-
-        content.append("---\n\n");
-        content.append(reservationCode).append("\n\n");
-
-        content.append("Cảm ơn bạn đã đặt vé tại AlphaCinema!\n");
-        content.append("Thank you for booking with AlphaCinema!");
-
-        return content.toString();
-    }
-
-    // Overloaded method để sử dụng trực tiếp từ Invoice entity
-    public void sendSuccessPayment(String toEmail, String customerName, com.example.movie_ticket_.entity.Invoice invoice) {
-        // Format thời gian chiếu
-        String sessionTime = invoice.getShowDate().toString() + " " + invoice.getShowTime().toString();
-
-        // Format payment time
-        String paymentTimeStr = invoice.getPaymentTime() != null ?
-                invoice.getPaymentTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")) : "";
-
-        // Format total amount
-        String totalAmountStr = invoice.getTotalPrice() != null ?
-                String.format("%.2f", invoice.getTotalPrice()) : "0.00";
-
-        PaymentMethod paymentMethod = paymentMethodRepository.findById(invoice.getPaymentMethodId())
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy payment"));
-
-        sendSuccessPayment(
-                toEmail,
-                customerName,
-                invoice.getTransactionNo() != null ? invoice.getTransactionNo() : String.valueOf(invoice.getId()),
-                invoice.getMovieName(),
-                invoice.getRoomName(), // Assuming roomName includes theater info, you might need to adjust this
-                "P" + invoice.getRoomName(), // Adjust based on your actual data structure
-                sessionTime,
-                invoice.getSeatCodes(),
-                invoice.getFoodDrinks() != null ? invoice.getFoodDrinks() : "",
-                paymentMethod.getNameMethod(), // You might want to store this in your invoice
-                paymentTimeStr,
-                totalAmountStr
-        );
-    }
 
 
 }
