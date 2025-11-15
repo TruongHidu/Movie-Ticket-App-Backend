@@ -11,6 +11,11 @@ import org.springframework.data.repository.query.Param;
 
 public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
 
+
+
+    List<Schedule> findAllByOrderByNgayChieuDesc();
+    List<Schedule> findByStatusOrderByNgayChieuDesc(int status);
+
     // Kiểm tra trùng lịch chiếu (cùng phòng, cùng xuất chiếu, cùng ngày)
     @Query("SELECT COUNT(s) > 0 FROM Schedule s WHERE " +
             "s.room.idPhongChieu = :roomId AND " +

@@ -30,10 +30,24 @@ public class ScheduleAdminController {
     private final ShowTimeService showTimeService;
 
     @GetMapping
-    public String list(Model model) {
-        model.addAttribute("schedules", scheduleService.getAll());
+    public String list(
+            @RequestParam(value = "status", required = false) Integer status,
+            Model model) {
+
+        List<Schedule> schedules;
+
+        if (status == null) {
+            schedules = scheduleService.getAll(); // hoặc getActive
+        } else {
+            schedules = scheduleService.getByStatus(status);
+        }
+
+        model.addAttribute("currentStatus", status); // để hiển thị lại trên UI
+        model.addAttribute("schedules", schedules);
+
         return "schedule/list";
     }
+
 
     @GetMapping("/add")
     public String addForm(Model model) {

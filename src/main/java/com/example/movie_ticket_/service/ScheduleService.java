@@ -21,8 +21,15 @@ public class ScheduleService {
     private final ScheduleRepository scheduleRepository;
 
     public List<Schedule> getAll() {
-        return scheduleRepository.findAll();
+        return scheduleRepository.findAllByOrderByNgayChieuDesc();
     }
+
+
+    public List<Schedule> getByStatus(int status) {
+        return scheduleRepository.findByStatusOrderByNgayChieuDesc(status);
+    }
+
+
 
     public Schedule getById(Long id) {
         return scheduleRepository.findById(id).orElse(null);
