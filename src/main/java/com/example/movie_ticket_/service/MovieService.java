@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 
@@ -120,7 +121,7 @@ public class MovieService {
 
     // Lấy danh sách phim đang chiếu
     public List<Movie> getPlayingMovies() {
-        return movieRepository.findPlayingMovies(LocalDate.now());
+        return movieRepository.findPlayingMovies(LocalDate.now(), LocalTime.now());
     }
 
     // Lấy danh sách phim sắp chiếu
