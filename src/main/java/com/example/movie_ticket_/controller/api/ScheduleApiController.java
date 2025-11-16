@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,8 +36,9 @@ public class ScheduleApiController {
         if (fromDate == null) {
             fromDate = LocalDate.now();
         }
+        LocalTime currentTime = LocalTime.now();
 
-        List<Schedule> schedules = scheduleService.getActiveSchedulesByMovie((long) movieId, fromDate);
+        List<Schedule> schedules = scheduleService.getActiveSchedulesByMovie((long) movieId, fromDate, currentTime);
 
         // Convert to DTO
         List<ScheduleDTO> scheduleDTOs = schedules.stream()
@@ -69,9 +71,10 @@ public class ScheduleApiController {
     public ResponseEntity<MovieScheduleDTO> getSchedulesByMovieAndDate(
             @PathVariable int movieId,
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        LocalTime currentTime = LocalTime.now();
 
         // Lấy danh sách lịch chiếu active cho phim + ngày cụ thể
-        List<Schedule> schedules = scheduleService.getActiveSchedulesByMovieAndDate((long) movieId, date);
+        List<Schedule> schedules = scheduleService.getActiveSchedulesByMovieAndDate((long) movieId, date,currentTime);
 
         if (schedules.isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -119,8 +122,8 @@ public class ScheduleApiController {
         if (fromDate == null) {
             fromDate = LocalDate.now();
         }
-
-        List<LocalDate> dates = scheduleService.getAvailableDatesByMovie((long) movieId, fromDate);
+        LocalTime currentTime = LocalTime.now();
+        List<LocalDate> dates = scheduleService.getAvailableDatesByMovie((long) movieId, fromDate,currentTime);
         return ResponseEntity.ok(dates);
     }
 
@@ -163,8 +166,9 @@ public class ScheduleApiController {
         if (fromDate == null) {
             fromDate = LocalDate.now();
         }
+        LocalTime currentTime = LocalTime.now();
 
-        List<LocalDate> dates = scheduleService.getAllAvailableDates(fromDate);
+        List<LocalDate> dates = scheduleService.getAllAvailableDates(fromDate,currentTime);
         return ResponseEntity.ok(dates);
     }
 
@@ -175,7 +179,9 @@ public class ScheduleApiController {
     @GetMapping("/date/{date}/movies")
     public ResponseEntity<List<MovieScheduleDTO>> getMoviesWithSchedulesByDate(
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        return ResponseEntity.ok(scheduleService.getMoviesWithSchedulesByDate(date));
+        LocalTime currentTime = LocalTime.now();
+
+        return ResponseEntity.ok(scheduleService.getMoviesWithSchedulesByDate(date, currentTime));
     }
 
 

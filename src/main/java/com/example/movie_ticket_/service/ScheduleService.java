@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -90,37 +91,39 @@ public class ScheduleService {
     /**
      * Lấy danh sách lịch chiếu active theo movieId và từ ngày chỉ định
      */
-    public List<Schedule> getActiveSchedulesByMovie(Long movieId, LocalDate fromDate) {
+    public List<Schedule> getActiveSchedulesByMovie(Long movieId, LocalDate fromDate, LocalTime currentTime) {
         return scheduleRepository.findByMovieIdAndNgayChieuGreaterThanEqualAndStatus(
-                movieId, fromDate, 1);
+                movieId, fromDate, currentTime, 1);
     }
 
     /**
      * Lấy danh sách lịch chiếu active theo movieId và ngày cụ thể
      */
-    public List<Schedule> getActiveSchedulesByMovieAndDate(Long movieId, LocalDate date) {
-        return scheduleRepository.findByMovieIdAndNgayChieuAndStatus(movieId, date, 1);
+    public List<Schedule> getActiveSchedulesByMovieAndDate(Long movieId, LocalDate date, LocalTime currentTime) {
+        LocalDate today = LocalDate.now();
+        return scheduleRepository.findByMovieIdAndNgayChieuAndStatus(
+                movieId, date, today, currentTime, 1);
     }
 
     /**
      * Lấy danh sách ngày chiếu có lịch cho một phim
      */
-    public List<LocalDate> getAvailableDatesByMovie(Long movieId, LocalDate fromDate) {
+    public List<LocalDate> getAvailableDatesByMovie(Long movieId, LocalDate fromDate, LocalTime currentTime) {
         return scheduleRepository.findDistinctNgayChieuByMovieIdAndNgayChieuGreaterThanEqualAndStatus(
-                movieId, fromDate, 1);
+                movieId, fromDate, currentTime, 1);
     }
 
 
     /**
      * Lấy tất cả ngày chiếu có lịch (status = 1)
      */
-    public List<LocalDate> getAllAvailableDates(LocalDate fromDate) {
-        return scheduleRepository.findDistinctNgayChieuByNgayChieuGreaterThanEqualAndStatus(fromDate, 1);
+    public List<LocalDate> getAllAvailableDates(LocalDate fromDate, LocalTime currentTime) {
+        return scheduleRepository.findDistinctNgayChieuByNgayChieuGreaterThanEqualAndStatus(fromDate,currentTime, 1);
     }
 
 
-    public List<MovieScheduleDTO> getMoviesWithSchedulesByDate(LocalDate date) {
-        List<Schedule> schedules = scheduleRepository.findActiveSchedulesByDate(date,1);
+    public List<MovieScheduleDTO> getMoviesWithSchedulesByDate(LocalDate date, LocalTime currentTime) {
+        List<Schedule> schedules = scheduleRepository.findActiveSchedulesByDate(date,currentTime,1);
 
         Map<Integer, List<Schedule>> grouped = schedules.stream()
                 .collect(Collectors.groupingBy(s -> s.getMovie().getIdPhim()));
