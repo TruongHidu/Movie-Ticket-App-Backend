@@ -8,5 +8,8 @@ import java.util.List;
 
 @Repository
 public interface PromotionRepository extends JpaRepository<Promotion, Long> {
-    List<Promotion> findByStatus(int status);
+
+
+    List<Promotion> findByStatusOrderByCreatedAtDesc(int status);
+
 }

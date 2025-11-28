@@ -123,7 +123,19 @@ public class ScheduleService {
 
 
     public List<MovieScheduleDTO> getMoviesWithSchedulesByDate(LocalDate date, LocalTime currentTime) {
-        List<Schedule> schedules = scheduleRepository.findActiveSchedulesByDate(date,currentTime,1);
+
+
+        int status = 1;
+        List<Schedule> schedules;
+
+
+        if (date.isEqual(LocalDate.now())) {
+            // hôm nay → xét thời gian
+            schedules = scheduleRepository.findActiveSchedulesForToday(date, currentTime, status);
+        } else {
+            // ngày khác → không xét thời gian
+            schedules = scheduleRepository.findActiveSchedulesByDateNoTime(date, status);
+        }
 
         Map<Integer, List<Schedule>> grouped = schedules.stream()
                 .collect(Collectors.groupingBy(s -> s.getMovie().getIdPhim()));

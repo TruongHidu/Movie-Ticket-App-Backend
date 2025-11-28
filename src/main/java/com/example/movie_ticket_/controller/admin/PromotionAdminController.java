@@ -36,11 +36,8 @@ public class PromotionAdminController {
     @PostMapping("/add")
     public String addPromotion(@ModelAttribute Promotion promotion,
                                @RequestParam("image") MultipartFile image) {
-        if (!image.isEmpty()) {
-            Map uploadResult = cloudinaryService.uploadToFolder(image, "promotions");
-            promotion.setImageUrl((String) uploadResult.get("secure_url"));
-        }
-        promotionService.createPromotion(promotion);
+
+        promotionService.createPromotion(promotion, image);
         return "redirect:/admin/promotions";
     }
 

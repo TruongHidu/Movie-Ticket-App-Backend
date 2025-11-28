@@ -131,4 +131,24 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
             @Param("date") LocalDate date,
             @Param("currentTime") LocalTime currentTime,
             @Param("status") int status);
+
+
+
+
+    @Query("SELECT s FROM Schedule s " +
+            "WHERE s.ngayChieu = :date AND s.showTime.khungGio > :currentTime " +
+            "AND s.status = :status " +
+            "ORDER BY s.movie.idPhim, s.showTime.khungGio")
+    List<Schedule> findActiveSchedulesForToday(
+            @Param("date") LocalDate date,
+            @Param("currentTime") LocalTime currentTime,
+            @Param("status") int status);
+
+    @Query("SELECT s FROM Schedule s " +
+            "WHERE s.ngayChieu = :date AND s.status = :status " +
+            "ORDER BY s.movie.idPhim, s.showTime.khungGio")
+    List<Schedule> findActiveSchedulesByDateNoTime(
+            @Param("date") LocalDate date,
+            @Param("status") int status);
+
 }
