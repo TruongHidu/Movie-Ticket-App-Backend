@@ -1,6 +1,8 @@
 package com.example.movie_ticket_.controller.api;
 
 import com.example.movie_ticket_.entity.User;
+import com.example.movie_ticket_.entity.UserDeviceToken;
+import com.example.movie_ticket_.repository.UserDeviceTokenRepository;
 import com.example.movie_ticket_.repository.UserRepository;
 import com.example.movie_ticket_.security.JwtUtil;
 import com.example.movie_ticket_.service.EmailService;
@@ -22,6 +24,7 @@ public class AuthController {
     private final UserService userService;
     private final EmailService emailService;
     private final JwtUtil jwtUtil;
+    private final UserDeviceTokenRepository userDeviceTokenRepository;
 
     @PostMapping("/google")
     public ResponseEntity<?> loginWithGoogle(@RequestBody Map<String, String> request) {
@@ -90,10 +93,37 @@ public class AuthController {
     }
 
 
-
     @PostMapping("/logout")
-    public ResponseEntity<?> logout() {
-        // Nếu lưu token ở client thì chỉ cần xóa token
-        return ResponseEntity.ok("Đã logout thành công!");
+    public ResponseEntity<?> logout(
+            @RequestHeader(value = "Device-Id") String deviceId) {
+
+        userDeviceTokenRepository.deleteByDeviceId(deviceId);
+        return ResponseEntity.ok("Log out OK");
     }
+
+
+    @PostMapping("/save-fcm-token")
+    public ResponseEntity<?> saveFcm(
+            @RequestHeader("Authorization") String jwt,
+            @RequestBody Map<String, String> body) {
+
+        String token = jwt.substring(7);
+        String email = jwtUtil.extractSubject(token);
+
+        User user = userRepository.findByEmail(email).orElseThrow();
+
+        String fcmToken = body.get("fcmToken");
+        String deviceId = body.get("deviceId");
+
+        userDeviceTokenRepository.deleteByDeviceId(deviceId);
+
+        UserDeviceToken udt = new UserDeviceToken();
+        udt.setUser(user);
+        udt.setDeviceId(deviceId);
+        udt.setFcmToken(fcmToken);
+        userDeviceTokenRepository.save(udt);
+
+        return ResponseEntity.ok("Saved");
+    }
+
 }
