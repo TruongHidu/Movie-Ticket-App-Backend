@@ -1,5 +1,6 @@
-package com.example.movie_ticket_.service;
+package com.example.movie_ticket_.scheduler;
 
+import com.example.movie_ticket_.service.SeatStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;

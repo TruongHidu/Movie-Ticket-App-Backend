@@ -97,6 +97,10 @@ public class AuthController {
     public ResponseEntity<?> logout(
             @RequestHeader(value = "Device-Id") String deviceId) {
 
+
+        System.out.println("DELETE TOKEN DEVICE ID => " + deviceId);
+
+
         userDeviceTokenRepository.deleteByDeviceId(deviceId);
         return ResponseEntity.ok("Log out OK");
     }
