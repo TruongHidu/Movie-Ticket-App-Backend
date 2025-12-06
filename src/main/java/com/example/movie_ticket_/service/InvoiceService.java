@@ -10,6 +10,7 @@ import com.example.movie_ticket_.util.BarcodeGenerator;
 import com.example.movie_ticket_.util.ByteArrayMultipartFile;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 
@@ -34,9 +35,9 @@ public class InvoiceService {
     public List<InvoiceDTO> getInvoicesByEmail(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-
-        List<Invoice> invoices = invoiceRepository.findByUserIdAndStatusOrderByPaymentTimeDesc(user.getId(), 1);
-
+        List<Integer> statuses = List.of(1, 2);
+//        List<Invoice> invoices = invoiceRepository.findByUserIdAndStatusInOrderByPaymentTimeDesc(user.getId(), statuses);
+        List<Invoice> invoices = invoiceRepository.findByUserIdOrderByCreatedAtDesc(user.getId());
         return invoices.stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
@@ -65,6 +66,8 @@ public class InvoiceService {
                 .bonusPoint(invoice.getBonusPoint())
                 .paymentTime(invoice.getPaymentTime())
                 .barcodeUrl(invoice.getBarcodeUrl())
+                .createdAt(invoice.getCreatedAt())
+                .status(invoice.getStatus())
                 .build();
     }
 
@@ -81,6 +84,38 @@ public class InvoiceService {
                 .map(s -> s.getSeatNumber().getId().getIdGhe())
                 .collect(Collectors.toList());
     }
+
+    @Transactional
+    public void reserveSeatsOrThrow(Long scheduleId, List<String> seatCodes, Long userId) {
+
+        LocalDateTime now = LocalDateTime.now();
+
+        List<SeatStatus> seats = seatStatusRepository
+                .findByScheduleAndSeatCodesForUpdate(scheduleId, seatCodes); // cần lock db
+
+        // 1) Kiểm tra conflict
+        for (SeatStatus s : seats) {
+            if (s.getStatus() == 1) {
+                throw new RuntimeException("Ghế " + s.getSeatNumber().getId().getIdGhe() + " đã được đặt!");
+            }
+
+            if (s.getStatus() == 2 &&
+                    s.getHoldUntil() != null &&
+                    s.getHoldUntil().isAfter(now)) {
+                throw new RuntimeException("Ghế " + s.getSeatNumber().getId().getIdGhe() + " đang giữ!");
+            }
+        }
+
+        // 2) Cập nhật ghế sang giữ
+        for (SeatStatus s : seats) {
+            s.setStatus(2);
+            s.setHoldBy(userId);
+            s.setHoldUntil(now.plusMinutes(15));
+        }
+
+        seatStatusRepository.saveAll(seats);
+    }
+
 
 
     public void updateSeatStatus(Long scheduleId, List<String> seatCodes, Long userId) {
@@ -174,21 +209,28 @@ public class InvoiceService {
         invoiceRepository.deleteById(id);
     }
 
+
+    @Transactional(rollbackFor = Exception.class)
     public Map<String, String> createInvoiceAndPaymentWithVNPay(InvoiceRequest request) throws Exception {
-        // 1️⃣ Tạo hóa đơn pending
+
+        // 1) Giữ ghế trong cùng transaction
+        List<String> seatCodes = Arrays.asList(request.getSeatCodes().split(","));
+        reserveSeatsOrThrow(request.getScheduleId(), seatCodes, request.getUserId());
+
+        // Tạo hóa đơn pending
         Invoice invoice = createInvoice(request); // dùng logic bạn đã có
         invoice.setStatus(0); // PENDING
         invoiceRepository.save(invoice);
 
 
 
-        List<String> seatCodes = List.of(invoice.getSeatCodes().split(","));
-        List<SeatStatus> seatStatuses = seatStatusRepository.findByScheduleAndSeatCodes(invoice.getSchedule().getIdLichChieu(), seatCodes);
-        for (SeatStatus s : seatStatuses) {
-            s.setStatus(2); // 2 = đã giữ
-            s.setHoldBy(invoice.getId());
-            s.setHoldUntil(LocalDateTime.now().plusMinutes(20));
-        }
+//        List<String> seatCodes = List.of(invoice.getSeatCodes().split(","));
+//        List<SeatStatus> seatStatuses = seatStatusRepository.findByScheduleAndSeatCodes(invoice.getSchedule().getIdLichChieu(), seatCodes);
+//        for (SeatStatus s : seatStatuses) {
+//            s.setStatus(2); // 2 = đã giữ
+//            s.setHoldBy(invoice.getId());
+//            s.setHoldUntil(LocalDateTime.now().plusMinutes(20));
+//        }
 
 
         // 2️⃣ Tạo URL VNPay
@@ -240,7 +282,7 @@ public class InvoiceService {
 
         String paymentUrl = vnp_Url + "?" + query.toString();
 
-        // 3️⃣ Trả kết quả
+        // Trả kết quả
         Map<String, String> result = new HashMap<>();
         result.put("invoiceId", String.valueOf(invoice.getId()));
         result.put("paymentUrl", paymentUrl);

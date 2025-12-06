@@ -19,7 +19,8 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
     List<Invoice> findByUserId(Long userId);
 
     // Tùy chọn thêm: tìm theo trạng thái
-    List<Invoice> findByUserIdAndStatusOrderByPaymentTimeDesc(Long userId, int status);
+    List<Invoice> findByUserIdAndStatusInOrderByPaymentTimeDesc(Long userId, List<Integer> statusList);
+    List<Invoice> findByUserIdOrderByCreatedAtDesc(Long userId);
     List<Invoice> findByUser(User user);
 
     @Query(value = """

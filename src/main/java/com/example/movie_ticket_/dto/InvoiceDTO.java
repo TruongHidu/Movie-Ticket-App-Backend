@@ -28,4 +28,6 @@ public class InvoiceDTO {
     private int bonusPoint;
     private LocalDateTime paymentTime;
     private String barcodeUrl;
+    private LocalDateTime createdAt;
+    private int status;
 }

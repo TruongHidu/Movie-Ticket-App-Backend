@@ -2,7 +2,9 @@ package com.example.movie_ticket_.repository;
 
 import com.example.movie_ticket_.entity.SeatStatus;
 import com.example.movie_ticket_.entity.SeatStatusId;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -17,5 +19,14 @@ public interface SeatStatusRepository extends JpaRepository<SeatStatus, SeatStat
             @Param("scheduleId") Long scheduleId,
             @Param("seatCodes") List<String> seatCodes
     );
+
+
+    @Query("SELECT s FROM SeatStatus s WHERE s.schedule.id = :scheduleId AND s.seatNumber.id.idGhe IN :seatCodes")
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    List<SeatStatus> findByScheduleAndSeatCodesForUpdate(
+            @Param("scheduleId") Long scheduleId,
+            @Param("seatCodes") List<String> seatCodes
+    );
+
 
 }
