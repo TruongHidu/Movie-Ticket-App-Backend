@@ -67,6 +67,7 @@ public class InvoiceService {
                 .paymentTime(invoice.getPaymentTime())
                 .barcodeUrl(invoice.getBarcodeUrl())
                 .createdAt(invoice.getCreatedAt())
+                .paymentUrl(invoice.getPaymentUrl())
                 .status(invoice.getStatus())
                 .build();
     }
@@ -281,6 +282,8 @@ public class InvoiceService {
         query.append("&vnp_SecureHash=").append(vnp_SecureHash);
 
         String paymentUrl = vnp_Url + "?" + query.toString();
+        invoice.setPaymentUrl(paymentUrl);
+        invoiceRepository.save(invoice);
 
         // Trả kết quả
         Map<String, String> result = new HashMap<>();
@@ -288,4 +291,153 @@ public class InvoiceService {
         result.put("paymentUrl", paymentUrl);
         return result;
     }
+
+
+    @Transactional
+    public void expirePendingInvoices() {
+        LocalDateTime now = LocalDateTime.now();
+        List<Invoice> invoices = invoiceRepository.findByStatus(0);
+
+        for (Invoice invoice : invoices) {
+            if (invoice.getCreatedAt().plusMinutes(3).isBefore(now)) {
+
+                // 1) Cập nhật invoice
+                invoice.setStatus(3);
+                invoice.setPaymentUrl(null);
+                invoiceRepository.save(invoice);
+
+                // 2) Trả ghế
+                releaseSeats(invoice.getSchedule().getIdLichChieu(),
+                             Arrays.asList(invoice.getSeatCodes().split(",")));
+            }
+        }
+    }
+
+    public InvoiceDTO getInvoiceByIdAndEmail(Long id, String email) {
+        Invoice invoice = invoiceRepository.findByIdAndUserEmail(id, email)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn hoặc không có quyền truy cập"));
+
+        return mapToDTO(invoice);
+    }
+
+    public InvoiceDTO cancelInvoice(Long id, String email) {
+
+        Invoice invoice = invoiceRepository
+                .findByIdAndUserEmail(id, email)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn"));
+
+        if (invoice.getStatus() != 0) {
+            throw new RuntimeException("Chỉ có thể hủy hóa đơn đang chờ thanh toán");
+        }
+
+        // ⭐ Trả ghế
+        releaseSeats(
+                invoice.getSchedule().getIdLichChieu(),
+                Arrays.asList(invoice.getSeatCodes().split(","))
+        );
+
+        invoice.setStatus(3); // 3 = CANCELED
+        invoice.setPaymentUrl(null);
+        invoiceRepository.save(invoice);
+
+        return mapToDTO(invoice);
+    }
+
+
+
+    @Transactional
+    public Map<String, String> retryPayment(Long invoiceId, String email) {
+
+        Invoice invoice = invoiceRepository.findByIdAndUserEmail(invoiceId, email)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn"));
+
+        if (invoice.getStatus() != 0) {
+            throw new RuntimeException("Hóa đơn không ở trạng thái chờ thanh toán");
+        }
+
+        LocalDateTime expiredAt = invoice.getCreatedAt().plusMinutes(15);
+        LocalDateTime now = LocalDateTime.now();
+
+        if (expiredAt.isBefore(now)) {
+            releaseSeats(
+                    invoice.getSchedule().getIdLichChieu(),
+                    Arrays.asList(invoice.getSeatCodes().split(","))
+            );
+
+            invoice.setStatus(3);
+            invoice.setPaymentUrl(null);
+            invoiceRepository.save(invoice);
+
+            throw new RuntimeException("Hóa đơn đã hết hạn thanh toán và bị hủy");
+        }
+
+        return Map.of("success", "Thành công");
+
+
+        // Thành công → tạo URL mới
+//        try {
+//            String newPaymentUrl = buildVNPayUrl(invoice);
+//            invoice.setPaymentUrl(newPaymentUrl);
+//            invoiceRepository.save(invoice);
+//
+//            return Map.of("paymentUrl", newPaymentUrl); // <<<<< chỉ trả paymentUrl
+//        } catch (Exception e) {
+//            throw new RuntimeException("Lỗi tạo URL VNPay");
+//        }
+    }
+
+
+    private String buildVNPayUrl(Invoice invoice) throws Exception {
+        String vnp_TxnRef = String.valueOf(invoice.getId()); // mã hóa đơn
+        String vnp_TmnCode = VNPAYConfig.vnp_TmnCode;
+        String vnp_HashSecret = VNPAYConfig.vnp_HashSecret;
+        String vnp_Url = VNPAYConfig.vnp_Url;
+        String vnp_ReturnUrl = VNPAYConfig.vnp_ReturnUrl;
+
+        String vnp_Version = VNPAYConfig.vnp_Version;
+        String vnp_Command = VNPAYConfig.vnp_Command;
+        String orderType = VNPAYConfig.orderType;
+        String amount = String.valueOf(invoice.getTotalPrice().multiply(BigDecimal.valueOf(100)).intValue());
+
+        Map<String, String> vnp_Params = new HashMap<>();
+        vnp_Params.put("vnp_Version", vnp_Version);
+        vnp_Params.put("vnp_Command", vnp_Command);
+        vnp_Params.put("vnp_TmnCode", vnp_TmnCode);
+        vnp_Params.put("vnp_Amount", amount);
+        vnp_Params.put("vnp_CurrCode", "VND");
+        vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
+        vnp_Params.put("vnp_OrderInfo", "Thanh toan ve xem phim #" + vnp_TxnRef);
+        vnp_Params.put("vnp_OrderType", orderType);
+        vnp_Params.put("vnp_Locale", "vn");
+        vnp_Params.put("vnp_ReturnUrl", vnp_ReturnUrl);
+        vnp_Params.put("vnp_IpAddr", "127.0.0.1");
+        vnp_Params.put("vnp_CreateDate", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
+
+        // Sắp xếp và tạo hash
+        List<String> fieldNames = new ArrayList<>(vnp_Params.keySet());
+        Collections.sort(fieldNames);
+        StringBuilder hashData = new StringBuilder();
+        StringBuilder query = new StringBuilder();
+        for (String fieldName : fieldNames) {
+            String fieldValue = vnp_Params.get(fieldName);
+            if (fieldValue != null && fieldValue.length() > 0) {
+                hashData.append(fieldName).append('=').append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII));
+                query.append(URLEncoder.encode(fieldName, StandardCharsets.US_ASCII)).append('=')
+                        .append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII));
+                if (!fieldName.equals(fieldNames.get(fieldNames.size() - 1))) {
+                    hashData.append('&');
+                    query.append('&');
+                }
+            }
+        }
+
+        String vnp_SecureHash = VNPayUtil.hmacSHA512(vnp_HashSecret, hashData.toString());
+        query.append("&vnp_SecureHash=").append(vnp_SecureHash);
+
+        return vnp_Url + "?" + query.toString();
+    }
+
+
+
+
 }

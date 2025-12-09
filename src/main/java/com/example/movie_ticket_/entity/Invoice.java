@@ -70,6 +70,10 @@ public class Invoice {
     @Column(name = "status", nullable = false)
     private int status = 0;
 
+    @Column(name = "payment_url", columnDefinition = "TEXT")
+    private String paymentUrl;
+
+
     @Column(name = "transaction_no")
     private String transactionNo; // mã giao dịch do VNPay trả về
 

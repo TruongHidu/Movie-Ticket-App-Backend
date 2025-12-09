@@ -97,6 +97,7 @@ public class PaymentApiController {
             invoice.setStatus(1); // PAID
             invoice.setTransactionNo(transactionNo);
             invoice.setPaymentTime(LocalDateTime.now());
+            invoice.setPaymentUrl(null);
             invoiceRepository.save(invoice);
             // Trong service xử lý thanh toán thành công
             emailService.sendSuccessPayment(
@@ -106,7 +107,7 @@ public class PaymentApiController {
             );
             return ResponseEntity.ok("Payment success for invoice " + txnRef);
         } else {
-            invoice.setStatus(2); // FAILED
+            invoice.setStatus(3); // FAILED
             invoiceRepository.save(invoice);
             return ResponseEntity.badRequest().body("Payment failed");
         }

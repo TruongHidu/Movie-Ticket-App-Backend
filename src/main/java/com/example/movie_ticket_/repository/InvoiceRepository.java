@@ -11,12 +11,15 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
 
     // Lấy danh sách hóa đơn theo người dùng
     List<Invoice> findByUserId(Long userId);
+    List<Invoice> findByStatus(int status);
+
 
     // Tùy chọn thêm: tìm theo trạng thái
     List<Invoice> findByUserIdAndStatusInOrderByPaymentTimeDesc(Long userId, List<Integer> statusList);
@@ -33,5 +36,17 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
             @Param("now") LocalDateTime now,
             @Param("threshold") LocalDateTime threshold
     );
+
+
+
+    @Query(value = """
+    SELECT * FROM invoice 
+    WHERE status = 0
+      AND DATE_ADD(created_at, INTERVAL 20 MINUTE) < NOW()
+""", nativeQuery = true)
+    List<Invoice> findExpiredPendingInvoices();
+
+
+    Optional<Invoice> findByIdAndUserEmail(Long id, String email);
 
 }

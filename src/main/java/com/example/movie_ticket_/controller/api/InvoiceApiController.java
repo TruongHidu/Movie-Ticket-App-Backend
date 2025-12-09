@@ -6,6 +6,7 @@ import com.example.movie_ticket_.dto.InvoiceDTO;
 import com.example.movie_ticket_.dto.InvoiceRequest;
 import com.example.movie_ticket_.entity.Invoice;
 import com.example.movie_ticket_.service.InvoiceService;
+import com.google.api.Authentication;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -48,6 +49,28 @@ public class InvoiceApiController {
     }
 
 
+    @GetMapping("/retry-payment/{invoiceId}")
+    public ResponseEntity<?> retryPayment(
+            @PathVariable Long invoiceId,
+            org.springframework.security.core.Authentication authentication) {
+
+        if (authentication == null || authentication.getName() == null) {
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
+
+        String email = authentication.getName();
+
+        try {
+            Map<String, String> data = invoiceService.retryPayment(invoiceId, email);
+            return ResponseEntity.ok(data); // ✔ trả về { "paymentUrl": "..." }
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage()); // <<<<< trả text
+        }
+    }
+
+
+
+
     @GetMapping("/my-invoices")
     public ResponseEntity<?> getMyInvoices(org.springframework.security.core.Authentication authentication) {
         if (authentication == null || authentication.getName() == null) {
@@ -58,7 +81,50 @@ public class InvoiceApiController {
         return ResponseEntity.ok(invoiceService.getInvoicesByEmail(email));
     }
 
+    @GetMapping("/my-invoices/{id}")
+    public ResponseEntity<?> getMyInvoiceById(
+            @PathVariable Long id,
+            org.springframework.security.core.Authentication authentication) {
 
+        if (authentication == null || authentication.getName() == null) {
+            return ResponseEntity.status(401)
+                    .body(Map.of("message", "Unauthorized"));
+        }
+
+        String email = authentication.getName();
+
+        try {
+            InvoiceDTO invoice = invoiceService.getInvoiceByIdAndEmail(id, email);
+            return ResponseEntity.ok(invoice);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404)
+                    .body(Map.of("message", e.getMessage()));
+        }
+    }
+
+
+    @PutMapping("/cancel/{id}")
+    public ResponseEntity<?> cancelInvoice(
+            @PathVariable Long id,
+            org.springframework.security.core.Authentication authentication) {
+
+        if (authentication == null || authentication.getName() == null) {
+            return ResponseEntity.status(401)
+                    .body(Map.of("message", "Unauthorized"));
+        }
+
+        String email = authentication.getName();
+
+        try {
+            InvoiceDTO canceledInvoice = invoiceService.cancelInvoice(id, email);
+            return ResponseEntity.ok(Map.of(
+                    "message", "Hủy hóa đơn thành công"
+            ));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", e.getMessage()));
+        }
+    }
 
 
     @DeleteMapping("/{id}")

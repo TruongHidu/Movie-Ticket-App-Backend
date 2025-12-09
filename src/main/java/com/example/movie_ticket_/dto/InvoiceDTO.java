@@ -29,5 +29,6 @@ public class InvoiceDTO {
     private LocalDateTime paymentTime;
     private String barcodeUrl;
     private LocalDateTime createdAt;
+    private String paymentUrl;
     private int status;
 }
