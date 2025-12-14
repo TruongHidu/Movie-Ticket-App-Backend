@@ -43,6 +43,17 @@ public class InvoiceService {
                 .collect(Collectors.toList());
     }
 
+    public int getTotalPendingPayment(String email){
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        List<Integer> statuses = List.of(0);
+        List<Invoice> invoices = invoiceRepository.findByUserIdAndStatusInOrderByPaymentTimeDesc(user.getId(), statuses);
+
+        return invoices.toArray().length;
+
+
+    }
+
 
     private InvoiceDTO mapToDTO(Invoice invoice) {
         // 🔹 Lấy tên phương thức thanh toán
@@ -299,7 +310,7 @@ public class InvoiceService {
         List<Invoice> invoices = invoiceRepository.findByStatus(0);
 
         for (Invoice invoice : invoices) {
-            if (invoice.getCreatedAt().plusMinutes(3).isBefore(now)) {
+            if (invoice.getCreatedAt().plusMinutes(20).isBefore(now)) {
 
                 // 1) Cập nhật invoice
                 invoice.setStatus(3);
@@ -346,7 +357,7 @@ public class InvoiceService {
 
 
     @Transactional
-    public Map<String, String> retryPayment(Long invoiceId, String email) {
+    public Map<String, String> retryPayment(Long invoiceId, String email) throws Exception {
 
         Invoice invoice = invoiceRepository.findByIdAndUserEmail(invoiceId, email)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn"));
@@ -363,7 +374,6 @@ public class InvoiceService {
                     invoice.getSchedule().getIdLichChieu(),
                     Arrays.asList(invoice.getSeatCodes().split(","))
             );
-
             invoice.setStatus(3);
             invoice.setPaymentUrl(null);
             invoiceRepository.save(invoice);
@@ -371,20 +381,15 @@ public class InvoiceService {
             throw new RuntimeException("Hóa đơn đã hết hạn thanh toán và bị hủy");
         }
 
-        return Map.of("success", "Thành công");
+        // Tạo URL mới
+        String newPaymentUrl = buildVNPayUrl(invoice);
+        invoice.setCreatedAt(LocalDateTime.now());
+        invoice.setPaymentUrl(newPaymentUrl);
+        invoiceRepository.save(invoice);
 
-
-        // Thành công → tạo URL mới
-//        try {
-//            String newPaymentUrl = buildVNPayUrl(invoice);
-//            invoice.setPaymentUrl(newPaymentUrl);
-//            invoiceRepository.save(invoice);
-//
-//            return Map.of("paymentUrl", newPaymentUrl); // <<<<< chỉ trả paymentUrl
-//        } catch (Exception e) {
-//            throw new RuntimeException("Lỗi tạo URL VNPay");
-//        }
+        return Map.of("paymentUrl", newPaymentUrl);
     }
+
 
 
     private String buildVNPayUrl(Invoice invoice) throws Exception {

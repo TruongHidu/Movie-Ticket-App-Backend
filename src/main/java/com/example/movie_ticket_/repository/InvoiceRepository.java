@@ -27,15 +27,15 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
     List<Invoice> findByUser(User user);
 
     @Query(value = """
-    SELECT * FROM invoice i
-    WHERE i.status = 1
-      AND CAST(CONCAT(i.show_date, ' ', i.show_time) AS DATETIME) 
-          BETWEEN :now AND :threshold
+SELECT * FROM invoice i
+WHERE i.status = 1
+  AND CAST(CONCAT(i.show_date, ' ', i.show_time) AS DATETIME)
+      <= :threshold
 """, nativeQuery = true)
-    List<Invoice> findInvoicesForNotify(
-            @Param("now") LocalDateTime now,
+    List<Invoice> findInvoicesNeedProcess(
             @Param("threshold") LocalDateTime threshold
     );
+
 
 
 

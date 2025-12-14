@@ -1,5 +1,9 @@
 package com.example.movie_ticket_.service;
 
+import com.example.movie_ticket_.entity.UserDeviceToken;
+import com.example.movie_ticket_.repository.UserDeviceTokenRepository;
+import com.google.firebase.messaging.FirebaseMessagingException;
+import com.google.firebase.messaging.MessagingErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -21,8 +25,10 @@ public class PromotionService {
 
     @Autowired
     private final  PromotionRepository promotionRepository;
-    private final   NotificationService notificationService ;
     private final CloudinaryService cloudinaryService;
+    private final FCMService fcmService;
+    private final UserDeviceTokenRepository userDeviceTokenRepository;
+
 
     public List<Promotion> getAllPromotions() {
         return promotionRepository.findAll();
@@ -46,11 +52,20 @@ public class PromotionService {
         Promotion saved = promotionRepository.save(promotion);
 
         try {
-            notificationService.sendPromotionNotification(
-                    "Khuyến mãi mới!",
-                    promotion.getTitle(),
-                    promotion.getImageUrl()
-            );
+            List<UserDeviceToken> devices = userDeviceTokenRepository.findAll();
+            if (!devices.isEmpty())
+            { for(UserDeviceToken device: devices){ String fcmToken = device.getFcmToken();
+                if (fcmToken == null || fcmToken.isBlank()) continue;
+                try { fcmService.sendPromotionNotification(fcmToken, promotion.getTitle(), promotion.getDescription(),promotion.getImageUrl() );
+                } catch (FirebaseMessagingException e) {
+                    if (e.getMessagingErrorCode() == MessagingErrorCode.UNREGISTERED ||
+                            e.getMessagingErrorCode() == MessagingErrorCode.INVALID_ARGUMENT)
+                    { userDeviceTokenRepository.delete(device);
+                    }
+                }
+            }
+            }
+
         } catch (Exception e) {
             System.out.println("Lỗi gửi thông báo: " + e.getMessage());
         }

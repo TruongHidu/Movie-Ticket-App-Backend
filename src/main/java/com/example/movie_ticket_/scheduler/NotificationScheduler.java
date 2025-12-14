@@ -12,6 +12,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
@@ -26,44 +28,63 @@ public class NotificationScheduler {
     public void sendUpcomingShowNotifications() {
 
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime threshold = now.plusMinutes(15);
+        LocalDateTime threshold = now.plusMinutes(60);
 
-        List<Invoice> invoices = invoiceRepository.findInvoicesForNotify(now, threshold);
+        List<Invoice> invoices =
+                invoiceRepository.findInvoicesNeedProcess(threshold);
 
         for (Invoice invoice : invoices) {
 
+            LocalDateTime showDateTime =
+                    LocalDateTime.of(invoice.getShowDate(), invoice.getShowTime());
+
+            // 1️⃣ Quá giờ → chỉ cập nhật
+            if (showDateTime.isBefore(now)) {
+                invoice.setStatus(2);
+                invoiceRepository.save(invoice);
+                continue;
+            }
+
+            // 2️⃣ Lấy danh sách thiết bị
             List<UserDeviceToken> devices =
                     deviceTokenRepo.findByUser(invoice.getUser());
 
-            if (devices.isEmpty()) continue;
+            // Không có thiết bị → chỉ cập nhật
+            if (devices.isEmpty()) {
+                invoice.setStatus(2);
+                invoiceRepository.save(invoice);
+                continue;
+            }
+
+            // 3️⃣ Gửi thông báo
+            DateTimeFormatter formatter =
+                    DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
+            String title = "Sắp đến giờ xem phim!";
+            String body = "Phim " + invoice.getMovieName()
+                    + " chiếu lúc " + invoice.getShowTime()
+                    + " " + invoice.getShowDate().format(formatter)
+                    + ". Ghế: " + invoice.getSeatCodes();
 
             for (UserDeviceToken device : devices) {
                 String fcmToken = device.getFcmToken();
-
                 if (fcmToken == null || fcmToken.isBlank()) continue;
 
-                String title = "Sắp đến giờ xem phim!";
-                String body = "Phim " + invoice.getMovieName() +
-                        " chiếu lúc " + invoice.getShowTime() +
-                        ". Ghế: " + invoice.getSeatCodes();
-
                 try {
-                    fcmService.sendNotification(fcmToken, title, body);
+                    fcmService.sendNotification(fcmToken, title, body, invoice.getId());
                 } catch (FirebaseMessagingException e) {
-
                     if (e.getMessagingErrorCode() == MessagingErrorCode.UNREGISTERED ||
                             e.getMessagingErrorCode() == MessagingErrorCode.INVALID_ARGUMENT) {
-
                         deviceTokenRepo.delete(device);
                     }
                 }
-
             }
 
-            // cập nhật trạng thái đã gửi
+            // 4️⃣ Đánh dấu đã xử lý
             invoice.setStatus(2);
             invoiceRepository.save(invoice);
         }
     }
+
 
 }

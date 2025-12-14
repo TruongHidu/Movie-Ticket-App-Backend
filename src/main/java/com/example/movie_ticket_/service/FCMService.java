@@ -6,28 +6,55 @@ import org.springframework.stereotype.Service;
 @Service
 public class FCMService {
 
-    public void sendNotification(String fcmToken, String title, String body) throws FirebaseMessagingException {
-
-//        Notification notification = Notification.builder()
-//                .setTitle(title)
-//                .setBody(body)
-//                .build();
-//
-//        Message message = Message.builder()
-//                .setToken(fcmToken)
-//                .setNotification(notification)
-//                .putData("click_action", "FLUTTER_NOTIFICATION_CLICK")
-//                .build();
+    // Trong FCMService.java
+    public void sendNotification(String fcmToken, String title, String body, Long invoiceId)
+            throws FirebaseMessagingException {
 
         Message message = Message.builder()
                 .setToken(fcmToken)
+                .putData("type", "INVOICE_DETAIL")
+                .putData("invoiceId", String.valueOf(invoiceId))
                 .putData("title", title)
                 .putData("body", body)
-                .putData("imageUrl", "")
-                .setNotification(Notification.builder().setTitle(title).setBody(body).build())
+                .setAndroidConfig(
+                        AndroidConfig.builder()
+                                .setPriority(AndroidConfig.Priority.HIGH)
+                                .build()
+                )
                 .build();
-
 
         FirebaseMessaging.getInstance().send(message);
     }
+
+
+
+    public void sendPromotionNotification(
+            String fcmToken,
+            String title,
+            String body,
+            String imageUrl
+    ) throws FirebaseMessagingException {
+
+        Message message = Message.builder()
+                .setToken(fcmToken)
+
+                // 🔥 CHỈ DATA – KHÔNG Notification payload
+                .putData("type", "PROMOTION")
+                .putData("title", title)
+                .putData("body", body)
+                .putData("imageUrl", imageUrl)
+
+                .setAndroidConfig(
+                        AndroidConfig.builder()
+                                .setPriority(AndroidConfig.Priority.HIGH)
+                                .build()
+                )
+                .build();
+
+        FirebaseMessaging.getInstance().send(message);
+    }
+
+
+
+
 }

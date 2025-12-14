@@ -5,13 +5,17 @@ import com.example.movie_ticket_.dto.CheckSeatRequest;
 import com.example.movie_ticket_.dto.InvoiceDTO;
 import com.example.movie_ticket_.dto.InvoiceRequest;
 import com.example.movie_ticket_.entity.Invoice;
+import com.example.movie_ticket_.entity.User;
 import com.example.movie_ticket_.service.InvoiceService;
+import com.example.movie_ticket_.service.UserService;
 import com.google.api.Authentication;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
+
 
 @RestController
 @RequestMapping("/api/invoices")
@@ -19,6 +23,7 @@ import java.util.Map;
 public class InvoiceApiController {
 
     private final InvoiceService invoiceService;
+    private final UserService userService;
 
     @PostMapping("/check-seats")
     public ResponseEntity<?> checkSeats(@RequestBody CheckSeatRequest request) {
@@ -52,23 +57,40 @@ public class InvoiceApiController {
     @GetMapping("/retry-payment/{invoiceId}")
     public ResponseEntity<?> retryPayment(
             @PathVariable Long invoiceId,
-            org.springframework.security.core.Authentication authentication) {
+            @AuthenticationPrincipal String authenticatedEmail) {
 
-        if (authentication == null || authentication.getName() == null) {
-            return ResponseEntity.status(401).body("Unauthorized");
+        if (authenticatedEmail == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
         }
 
-        String email = authentication.getName();
-
         try {
-            Map<String, String> data = invoiceService.retryPayment(invoiceId, email);
-            return ResponseEntity.ok(data); // ✔ trả về { "paymentUrl": "..." }
+            Map<String, String> data = invoiceService.retryPayment(invoiceId, authenticatedEmail);
+
+            return ResponseEntity.ok(data);
+            // Luôn trả JSON: { "paymentUrl": "..." }
+
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage()); // <<<<< trả text
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", e.getMessage()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of(
+                    "error", "Internal server error"
+            ));
         }
     }
 
 
+
+    @GetMapping("/my-invoices/count")
+    public ResponseEntity<?> getTotalPendingPayment(org.springframework.security.core.Authentication authentication) {
+        if (authentication == null || authentication.getName() == null) {
+            return ResponseEntity.status(401).body(Map.of("message", "Unauthorized"));
+        }
+
+        String email = authentication.getName();
+        return ResponseEntity.ok(invoiceService.getTotalPendingPayment(email));
+    }
 
 
     @GetMapping("/my-invoices")
@@ -77,7 +99,7 @@ public class InvoiceApiController {
             return ResponseEntity.status(401).body(Map.of("message", "Unauthorized"));
         }
 
-        String email = authentication.getName(); // ✅ Lấy từ JWT subject
+        String email = authentication.getName();
         return ResponseEntity.ok(invoiceService.getInvoicesByEmail(email));
     }
 
