@@ -51,8 +51,6 @@ public class NotificationScheduler {
 
             // Không có thiết bị → chỉ cập nhật
             if (devices.isEmpty()) {
-                invoice.setStatus(2);
-                invoiceRepository.save(invoice);
                 continue;
             }
 
