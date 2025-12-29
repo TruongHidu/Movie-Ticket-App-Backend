@@ -1,36 +1,145 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản lý người dùng</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary: #4e73df;
+            --secondary: #6f42c1;
+            --success: #1cc88a;
+            --info: #36b9cc;
+            --warning: #f6c23e;
+            --danger: #e74a3b;
+            --light: #f8f9fc;
+            --dark: #5a5c69;
+        }
+        
+        body {
+            background-color: #f8f9fc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .page-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 1.5rem;
+            margin: -1rem -1rem 2rem -1rem;
+            border-radius: 0 0 15px 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .table-view {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+        
+        .table thead th {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 1rem;
+            font-weight: 600;
+        }
+        
+        .table tbody td {
+            padding: 1rem;
+            vertical-align: middle;
+        }
+        
+        .table tbody tr:hover {
+            background-color: #f8f9fc;
+        }
+        
+        .action-buttons .btn {
+            border-radius: 20px;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.8rem;
+            margin-right: 0.5rem;
+        }
+        
+        @media (max-width: 768px) {
+            .table-responsive {
+                overflow-x: auto;
+            }
+        }
+    </style>
 </head>
-<body>
-<h1>Danh sách người dùng</h1>
-<a th:href="@{/admin/users/add}">Thêm user</a>
-<table border="1">
-    <tr>
-        <th>ID</th>
-        <th>Tên</th>
-        <th>Email</th>
-        <th>Vai trò</th>
-        <th>Trạng thái</th>
-        <th>Hành động</th>
-    </tr>
-    <tr th:each="user : ${users}">
-        <td th:text="${user.id}"></td>
-        <td th:text="${user.name}"></td>
-        <td th:text="${user.email}"></td>
-        <td th:text="${user.role == 1 ? 'Admin' : 'User'}"></td>
-        <td>
-            <span th:text="${user.status == 1 ? 'Hoạt động' : 'Khóa'}"></span>
-        </td>
-        <td>
-            <a th:href="@{'/admin/users/edit/' + ${user.id}}">Sửa</a> |
-            <a th:href="@{'/admin/users/delete/' + ${user.id}}">Xóa</a> |
-            <a th:href="@{'/admin/users/status/' + ${user.id} + '/' + ${user.status == 1 ? 0 : 1}}">
-                <span th:text="${user.status == 1 ? 'Khóa' : 'Mở'}"></span>
+<body class="container mt-4">
+    <!-- Header -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1><i class="bi bi-people me-2"></i>Quản lý người dùng</h1>
+            <a th:href="@{/admin}" class="btn btn-light">
+                <i class="bi bi-arrow-left me-1"></i>Về Dashboard
             </a>
-        </td>
-    </tr>
-</table>
+        </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+        <div></div>
+        <div>
+            <a th:href="@{/admin/users/add}" class="btn btn-success">
+                <i class="bi bi-plus-circle me-1"></i>Thêm người dùng
+            </a>
+        </div>
+    </div>
+
+    <!-- Table View -->
+    <div class="table-view">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Tên</th>
+                        <th>Email</th>
+                        <th>Vai trò</th>
+                        <th>Trạng thái</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="user : ${users}">
+                        <td th:text="${user.id}"></td>
+                        <td th:text="${user.name}"></td>
+                        <td th:text="${user.email}"></td>
+                        <td>
+                            <span th:if="${user.role == 1}" class="badge bg-danger">Admin</span>
+                            <span th:if="${user.role == 0}" class="badge bg-primary">User</span>
+                        </td>
+                        <td>
+                            <span th:if="${user.status == 1}" class="badge bg-success">Hoạt động</span>
+                            <span th:if="${user.status == 0}" class="badge bg-secondary">Khóa</span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a th:href="@{'/admin/users/edit/' + ${user.id}}" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-pencil"></i> Sửa
+                                </a>
+                                <a th:href="@{'/admin/users/delete/' + ${user.id}}" class="btn btn-danger btn-sm"
+                                   onclick="return confirm('Bạn có chắc muốn xóa người dùng này?')">
+                                    <i class="bi bi-trash"></i> Xóa
+                                </a>
+                                <a th:href="@{'/admin/users/status/' + ${user.id} + '/' + ${user.status == 1 ? 0 : 1}}" 
+                                   class="btn btn-warning btn-sm">
+                                    <span th:if="${user.status == 1}"><i class="bi bi-lock"></i> Khóa</span>
+                                    <span th:if="${user.status == 0}"><i class="bi bi-unlock"></i> Mở</span>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
