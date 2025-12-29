@@ -49,4 +49,24 @@ WHERE i.status = 1
 
     Optional<Invoice> findByIdAndUserEmail(Long id, String email);
 
+    // Tìm kiếm theo tên phim (không phân biệt hoa thường)
+    @Query("SELECT i FROM Invoice i WHERE LOWER(i.movieName) LIKE LOWER(CONCAT('%', :movieName, '%'))")
+    List<Invoice> findByMovieNameContainingIgnoreCase(@Param("movieName") String movieName);
+
+    // Tìm kiếm theo tháng và năm
+    @Query("SELECT i FROM Invoice i WHERE MONTH(i.showDate) = :month AND YEAR(i.showDate) = :year")
+    List<Invoice> findByMonthAndYear(@Param("month") int month, @Param("year") int year);
+
+    // Tìm kiếm kết hợp: tên phim và tháng/năm
+    @Query("SELECT i FROM Invoice i WHERE LOWER(i.movieName) LIKE LOWER(CONCAT('%', :movieName, '%')) AND MONTH(i.showDate) = :month AND YEAR(i.showDate) = :year")
+    List<Invoice> findByMovieNameAndMonthYear(@Param("movieName") String movieName, @Param("month") int month, @Param("year") int year);
+
+    // Tìm kiếm kết hợp: status và tên phim
+    @Query("SELECT i FROM Invoice i WHERE i.status = :status AND LOWER(i.movieName) LIKE LOWER(CONCAT('%', :movieName, '%'))")
+    List<Invoice> findByStatusAndMovieName(@Param("status") int status, @Param("movieName") String movieName);
+
+    // Tìm kiếm kết hợp: status, tên phim và tháng/năm
+    @Query("SELECT i FROM Invoice i WHERE i.status = :status AND LOWER(i.movieName) LIKE LOWER(CONCAT('%', :movieName, '%')) AND MONTH(i.showDate) = :month AND YEAR(i.showDate) = :year")
+    List<Invoice> findByStatusAndMovieNameAndMonthYear(@Param("status") int status, @Param("movieName") String movieName, @Param("month") int month, @Param("year") int year);
+
 }

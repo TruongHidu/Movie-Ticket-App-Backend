@@ -217,6 +217,50 @@ public class InvoiceService {
         return invoiceRepository.findAll();
     }
 
+    public List<Invoice> getInvoicesByStatus(int status) {
+        return invoiceRepository.findByStatus(status);
+    }
+
+    public Invoice getInvoiceById(Long id) {
+        return invoiceRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn với ID: " + id));
+    }
+
+    public List<Invoice> searchInvoices(Integer status, String movieName, Integer month, Integer year) {
+        // Nếu có month nhưng không có year, sử dụng năm hiện tại
+        Integer searchYear = year;
+        if (month != null && searchYear == null) {
+            searchYear = java.time.LocalDate.now().getYear();
+        }
+        
+        // Nếu có đầy đủ tham số: status, movieName, month, year
+        if (status != null && movieName != null && !movieName.trim().isEmpty() && month != null && searchYear != null) {
+            return invoiceRepository.findByStatusAndMovieNameAndMonthYear(status, movieName.trim(), month, searchYear);
+        }
+        // Nếu có status và movieName
+        if (status != null && movieName != null && !movieName.trim().isEmpty()) {
+            return invoiceRepository.findByStatusAndMovieName(status, movieName.trim());
+        }
+        // Nếu có movieName và month/year
+        if (movieName != null && !movieName.trim().isEmpty() && month != null && searchYear != null) {
+            return invoiceRepository.findByMovieNameAndMonthYear(movieName.trim(), month, searchYear);
+        }
+        // Nếu chỉ có movieName
+        if (movieName != null && !movieName.trim().isEmpty()) {
+            return invoiceRepository.findByMovieNameContainingIgnoreCase(movieName.trim());
+        }
+        // Nếu chỉ có month/year (với year mặc định nếu cần)
+        if (month != null && searchYear != null) {
+            return invoiceRepository.findByMonthAndYear(month, searchYear);
+        }
+        // Nếu chỉ có status
+        if (status != null) {
+            return invoiceRepository.findByStatus(status);
+        }
+        // Mặc định: trả về tất cả
+        return invoiceRepository.findAll();
+    }
+
     public void deleteInvoice(Long id) {
         invoiceRepository.deleteById(id);
     }
