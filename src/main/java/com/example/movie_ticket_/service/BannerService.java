@@ -26,7 +26,7 @@ public class BannerService {
                 .collect(Collectors.toList());
     }
     public List<Banner> getActiveBanners(){
-        return bannerRepository.findByStatus(1);
+        return bannerRepository.findByStatusOrderByIdDesc(1);
     }
 
 

@@ -32,21 +32,19 @@ public class ScheduleAdminController {
     @GetMapping
     public String list(
             @RequestParam(value = "status", required = false) Integer status,
+            @RequestParam(value = "movieId", required = false) Integer movieId,
             Model model) {
 
-        List<Schedule> schedules;
+        model.addAttribute("schedules",
+                           scheduleService.getFiltered(status, movieId));
 
-        if (status == null) {
-            schedules = scheduleService.getAll(); // hoặc getActive
-        } else {
-            schedules = scheduleService.getByStatus(status);
-        }
-
-        model.addAttribute("currentStatus", status); // để hiển thị lại trên UI
-        model.addAttribute("schedules", schedules);
+        model.addAttribute("movies", movieService.getActiveMovies());
+        model.addAttribute("currentStatus", status);
+        model.addAttribute("currentMovieId", movieId);
 
         return "schedule/list";
     }
+
 
 
     @GetMapping("/add")

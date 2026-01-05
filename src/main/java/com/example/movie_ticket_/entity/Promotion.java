@@ -1,6 +1,7 @@
 package com.example.movie_ticket_.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -16,11 +17,11 @@ public class Promotion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(name = "title", nullable = false)
+    @Size(max = 500)
+    @Column(name = "title", nullable = false, length=500)
     private String title;
-
-    @Column(name = "description", nullable = false)
+    @Lob
+    @Column(name = "description", nullable = false, columnDefinition = "TEXT")
     private String description; // sửa lại tên biến
 
     @Column(name = "image_url", nullable = false)

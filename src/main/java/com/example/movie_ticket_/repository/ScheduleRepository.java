@@ -151,4 +151,16 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
             @Param("date") LocalDate date,
             @Param("status") int status);
 
+
+
+
+
+    //admin
+
+    List<Schedule> findByStatusOrderByIdLichChieuDesc(int status);
+
+    List<Schedule> findByMovie_IdPhimOrderByIdLichChieuDesc(int movieId);
+
+    List<Schedule> findByStatusAndMovie_IdPhimOrderByIdLichChieuDesc(int status, int movieId);
+
 }

@@ -5,6 +5,7 @@ import com.example.movie_ticket_.dto.ShowTimeScheduleDTO;
 import com.example.movie_ticket_.entity.Schedule;
 import com.example.movie_ticket_.repository.ScheduleRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -164,11 +165,26 @@ public class ScheduleService {
                     first.getMovie().getPoster(),
                     first.getMovie().getDescrip(),
                     first.getMovie().getDienVien(),
-                    showTimes
+                    showTimes,
+                    first.getMovie().getTrailerUrl()
             ));
         }
         return result;
     }
 
+//admin
+
+    public List<Schedule> getFiltered(Integer status, Integer movieId) {
+        if (status != null && movieId != null) {
+            return scheduleRepository.findByStatusAndMovie_IdPhimOrderByIdLichChieuDesc(status, movieId);
+        }
+        if (status != null) {
+            return scheduleRepository.findByStatusOrderByIdLichChieuDesc(status);
+        }
+        if (movieId != null) {
+            return scheduleRepository.findByMovie_IdPhimOrderByIdLichChieuDesc(movieId);
+        }
+        return scheduleRepository.findAll(Sort.by(Sort.Direction.DESC, "idLichChieu"));
+    }
 
 }

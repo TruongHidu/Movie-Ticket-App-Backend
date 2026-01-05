@@ -104,7 +104,8 @@ public class ScheduleApiController {
                 movie.getPoster(),
                 movie.getDescrip(),
                 movie.getDienVien(),
-                showTimeScheduleDTOs
+                showTimeScheduleDTOs,
+                movie.getTrailerUrl()
         );
 
         return ResponseEntity.ok(movieScheduleDTO);

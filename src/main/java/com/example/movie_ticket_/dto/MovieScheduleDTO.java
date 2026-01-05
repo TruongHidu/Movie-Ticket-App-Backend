@@ -21,4 +21,5 @@ public class MovieScheduleDTO {
     private String descrip;
     private String dienVien;
     private List<ShowTimeScheduleDTO> schedules;
+    private String trailerUrl;
 }

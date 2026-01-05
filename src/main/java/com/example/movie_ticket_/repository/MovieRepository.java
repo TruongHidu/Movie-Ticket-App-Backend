@@ -15,6 +15,8 @@ public interface MovieRepository extends JpaRepository<Movie, Integer> {
     List<Movie> findByTheloaiContainingIgnoreCase(String theloai);
 
     List<Movie> findByStatus(int status);
+    List<Movie> findByStatusOrderByIdPhimDesc(int status);
+
 
     // Tìm phim đang chiếu
     @Query("SELECT DISTINCT m FROM Movie m JOIN Schedule s ON m.idPhim = s.movie.idPhim " +

@@ -19,8 +19,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class MovieAdminController {
 
-    // Lombok's @RequiredArgsConstructor will generate a constructor
-    // that injects these dependencies.
+
     private final MovieService movieService;
     private final MovieRepository movieRepository;
 
@@ -28,9 +27,9 @@ public class MovieAdminController {
     public String listMovies(@RequestParam(value = "status", required = false) Integer status, Model model) {
         List<Movie> movies;
         if (status == null) {
-            movies = movieRepository.findAll(); // Use repository directly here if needed for admin listing
+            movies = movieRepository.findByStatusOrderByIdPhimDesc(1); // Use repository directly here if needed for admin listing
         } else {
-            movies = movieRepository.findByStatus(status);
+            movies = movieRepository.findByStatusOrderByIdPhimDesc(status);
         }
         model.addAttribute("movies", movies);
         return "movie/movies"; // Assumes you have a view named movies.html in
