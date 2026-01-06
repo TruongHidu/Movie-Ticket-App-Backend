@@ -105,7 +105,23 @@ public class InvoiceAdminController {
                         PaymentMethod::getId,
                         PaymentMethod::getNameMethod
                 ));
-        
+
+        // ================= DOANH THU THEO PHIM =================
+// Chỉ tính hóa đơn đã thanh toán và hoàn thành
+        Map<String, java.math.BigDecimal> revenueByMovie = invoices.stream()
+                .filter(inv -> inv.getStatus() == 1 || inv.getStatus() == 2)
+                .filter(inv -> inv.getMovieName() != null)
+                .filter(inv -> inv.getTotalPrice() != null)
+                .collect(Collectors.groupingBy(
+                        Invoice::getMovieName,
+                        Collectors.reducing(
+                                java.math.BigDecimal.ZERO,
+                                Invoice::getTotalPrice,
+                                java.math.BigDecimal::add
+                        )
+                ));
+
+
         model.addAttribute("invoices", invoices);
         model.addAttribute("searchMovieName", movieName);
         model.addAttribute("searchMonth", month);
@@ -114,6 +130,8 @@ public class InvoiceAdminController {
         model.addAttribute("totalAmount", totalAmount);
         model.addAttribute("isSearching", isSearching);
         model.addAttribute("invoiceCount", invoices.size());
+        model.addAttribute("revenueByMovie", revenueByMovie);
+
         return "invoice/list";
     }
 

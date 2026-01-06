@@ -157,10 +157,10 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
 
     //admin
 
-    List<Schedule> findByStatusOrderByIdLichChieuDesc(int status);
 
-    List<Schedule> findByMovie_IdPhimOrderByIdLichChieuDesc(int movieId);
 
-    List<Schedule> findByStatusAndMovie_IdPhimOrderByIdLichChieuDesc(int status, int movieId);
+    List<Schedule> findByMovie_IdPhimOrderByNgayChieuDesc(int movieId);
+
+    List<Schedule> findByStatusAndMovie_IdPhimOrderByNgayChieuDesc(int status, int movieId);
 
 }

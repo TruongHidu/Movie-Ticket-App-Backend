@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 public class ScheduleService {
 
     private final ScheduleRepository scheduleRepository;
+    private final InvoiceService invoiceService;
 
     public List<Schedule> getAll() {
         return scheduleRepository.findAllByOrderByNgayChieuDesc();
@@ -176,15 +177,28 @@ public class ScheduleService {
 
     public List<Schedule> getFiltered(Integer status, Integer movieId) {
         if (status != null && movieId != null) {
-            return scheduleRepository.findByStatusAndMovie_IdPhimOrderByIdLichChieuDesc(status, movieId);
+            return scheduleRepository
+                    .findByStatusAndMovie_IdPhimOrderByNgayChieuDesc(status, movieId);
         }
+
         if (status != null) {
-            return scheduleRepository.findByStatusOrderByIdLichChieuDesc(status);
+            return scheduleRepository
+                    .findByStatusOrderByNgayChieuDesc(status);
         }
+
         if (movieId != null) {
-            return scheduleRepository.findByMovie_IdPhimOrderByIdLichChieuDesc(movieId);
+            return scheduleRepository
+                    .findByMovie_IdPhimOrderByNgayChieuDesc(movieId);
         }
-        return scheduleRepository.findAll(Sort.by(Sort.Direction.DESC, "idLichChieu"));
+
+        return scheduleRepository.findAll(
+                Sort.by(Sort.Direction.DESC, "ngayChieu")
+        );
+    }
+
+
+    public boolean canEdit(Long scheduleId) {
+        return !invoiceService.hasInvoice(scheduleId);
     }
 
 }

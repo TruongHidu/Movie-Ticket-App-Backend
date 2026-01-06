@@ -194,6 +194,19 @@
             </a>
         </div>
     </div>
+    <!-- Flash Messages -->
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
 
     <!-- Controls -->
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
@@ -273,14 +286,19 @@
                 </div>
                 
                 <div class="action-buttons d-flex justify-content-end">
-                    <a th:href="@{'/admin/schedules/edit/' + ${s.idLichChieu}}" class="btn btn-primary btn-sm">
+                    <a th:if="${canEditMap[s.idLichChieu]}"
+                       th:href="@{'/admin/schedules/edit/' + ${s.idLichChieu}}"
+                       class="btn btn-primary btn-sm">
                         <i class="bi bi-pencil"></i> Sửa
                     </a>
-                    <form th:action="@{'/admin/schedules/status/' + ${s.idLichChieu}}" method="post">
-                        <button type="submit" class="btn btn-warning btn-sm">
-                            <span th:if="${s.status == 1}"><i class="bi bi-lock"></i> Khóa</span>
-                            <span th:if="${s.status == 0}"><i class="bi bi-unlock"></i> Mở</span>
-                        </button>
+
+                    <button th:if="${!canEditMap[s.idLichChieu]}"
+                            class="btn btn-secondary btn-sm"
+                            disabled
+                            title="Lịch chiếu đã có người đặt vé">
+                        <i class="bi bi-lock"></i> Không thể sửa
+                    </button>
+
                     </form>
                 </div>
             </div>

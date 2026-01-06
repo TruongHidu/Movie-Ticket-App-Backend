@@ -69,4 +69,6 @@ WHERE i.status = 1
     @Query("SELECT i FROM Invoice i WHERE i.status = :status AND LOWER(i.movieName) LIKE LOWER(CONCAT('%', :movieName, '%')) AND MONTH(i.showDate) = :month AND YEAR(i.showDate) = :year")
     List<Invoice> findByStatusAndMovieNameAndMonthYear(@Param("status") int status, @Param("movieName") String movieName, @Param("month") int month, @Param("year") int year);
 
+
+    boolean existsBySchedule_IdLichChieu(Long scheduleId);
 }

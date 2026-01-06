@@ -18,6 +18,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/admin/schedules")
@@ -35,12 +36,19 @@ public class ScheduleAdminController {
             @RequestParam(value = "movieId", required = false) Integer movieId,
             Model model) {
 
-        model.addAttribute("schedules",
-                           scheduleService.getFiltered(status, movieId));
+        List<Schedule> schedules = scheduleService.getFiltered(status, movieId);
 
+        model.addAttribute("schedules", schedules);
         model.addAttribute("movies", movieService.getActiveMovies());
         model.addAttribute("currentStatus", status);
         model.addAttribute("currentMovieId", movieId);
+
+        model.addAttribute("canEditMap",
+                           schedules.stream().collect(Collectors.toMap(
+                                   Schedule::getIdLichChieu,
+                                   s -> scheduleService.canEdit(s.getIdLichChieu())
+                           ))
+        );
 
         return "schedule/list";
     }
@@ -90,7 +98,18 @@ public class ScheduleAdminController {
     }
 
     @GetMapping("/edit/{id}")
-    public String editForm(@PathVariable Long id, Model model) {
+    public String editForm(@PathVariable Long id,
+                           Model model,
+                           RedirectAttributes redirectAttributes) {
+
+        if (!scheduleService.canEdit(id)) {
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "Không thể chỉnh sửa lịch chiếu đã có người đặt vé!"
+            );
+            return "redirect:/admin/schedules";
+        }
+
         Schedule schedule = scheduleService.getById(id);
         if (schedule == null) {
             return "redirect:/admin/schedules";
@@ -104,13 +123,22 @@ public class ScheduleAdminController {
         return "schedule/edit";
     }
 
+
     @PostMapping("/edit/{id}")
     public String edit(@PathVariable Long id,
-            @RequestParam("movieId") int movieId,
-            @RequestParam("roomId") String roomId,
-            @RequestParam("showTimeId") Long showTimeId,
-            @RequestParam("ngayChieu") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate ngayChieu,
-            RedirectAttributes redirectAttributes) {
+                       @RequestParam("movieId") int movieId,
+                       @RequestParam("roomId") String roomId,
+                       @RequestParam("showTimeId") Long showTimeId,
+                       @RequestParam("ngayChieu") LocalDate ngayChieu,
+                       RedirectAttributes redirectAttributes) {
+
+        if (!scheduleService.canEdit(id)) {
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "Lịch chiếu đã có người đặt vé, không thể chỉnh sửa!"
+            );
+            return "redirect:/admin/schedules";
+        }
 
         // Kiểm tra trùng lịch (loại trừ bản ghi hiện tại)
         boolean isConflict = scheduleService.isScheduleConflict(roomId, showTimeId, ngayChieu, id);

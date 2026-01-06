@@ -488,5 +488,9 @@ public class InvoiceService {
 
 
 
+    public boolean hasInvoice(Long scheduleId) {
+        return invoiceRepository.existsBySchedule_IdLichChieu(scheduleId);
+    }
+
 
 }
