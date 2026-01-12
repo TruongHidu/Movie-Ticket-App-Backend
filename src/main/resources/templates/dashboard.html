@@ -95,12 +95,38 @@
 </head>
 <body>
     <!-- Header -->
-    <div class="dashboard-header text-center">
-        <div class="container">
-            <h1 class="display-4 fw-bold"><i class="bi bi-speedometer2 me-2"></i>Admin Dashboard</h1>
-            <p class="lead">Quản lý hệ thống rạp chiếu phim</p>
+    <div class="dashboard-header">
+        <div class="container d-flex justify-content-between align-items-center">
+            <!-- Title -->
+            <div>
+                <h1 class="fw-bold mb-1">
+                    <i class="bi bi-speedometer2 me-2"></i>Admin Dashboard
+                </h1>
+                <p class="mb-0 opacity-75">Quản lý hệ thống rạp chiếu phim</p>
+            </div>
+
+            <!-- Admin Info -->
+            <div class="d-flex align-items-center">
+                <div class="me-3 text-end">
+                    <div class="fw-semibold">Van Truong</div>
+                    <small class="opacity-75">Quản trị viên</small>
+                </div>
+
+                <!-- Avatar -->
+                <img src="https://ui-avatars.com/api/?name=Admin&background=ffffff&color=4e73df&size=128"
+                     alt="Admin Avatar"
+                     class="rounded-circle me-3"
+                     width="45"
+                     height="45">
+
+                <!-- Logout (UI only) -->
+                <a href="#" class="btn btn-light btn-sm">
+                    <i class="bi bi-box-arrow-right"></i>
+                </a>
+            </div>
         </div>
     </div>
+
 
     <!-- Main Content -->
     <div class="container">
