@@ -25,6 +25,9 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/auth/**",   // login/register
                                 "/admin/**",
+                                "/",
+                                "/login-admin",
+                                "/logout-admin",
                                 "/api/movies/**",
                                 "/api/schedules/**",
                                 "/api/payment-methods/**",
