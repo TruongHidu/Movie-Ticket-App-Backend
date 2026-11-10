@@ -42,8 +42,9 @@ services:
         target: /app/secrets/firebase-service-account.json
         read_only: true
     ports:
-      # Cổng mở ra ngoài, đổi bằng APP_PORT trong .env nếu cần
-      - "${APP_PORT:-8081}:8081"
+      # Mặc định chỉ mở cho chính VPS (127.0.0.1) để Caddy reverse_proxy vào,
+      # người ngoài không truy cập thẳng cổng 8081 được. Đổi bằng APP_BIND / APP_PORT trong .env nếu cần.
+      - "${APP_BIND:-127.0.0.1}:${APP_PORT:-8081}:8081"
 
 volumes:
   mysql_data:
