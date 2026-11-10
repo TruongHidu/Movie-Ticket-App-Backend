@@ -38,3 +38,6 @@ build/
 !.env.example
 firebase-service-account.json
 hs_err_pid*.log
+
+### Database dump (chua du lieu nguoi dung) ###
+*.sql

@@ -31,7 +31,8 @@ services:
     env_file: .env
     environment:
       # Ghi đè các giá trị trong .env cho môi trường Docker
-      DB_URL: jdbc:mysql://mysql:3306/movie_ticket_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Ho_Chi_Minh
+      # Dùng tên container (duy nhất) thay vì "mysql" để không nhầm với DB của project khác khi chung mạng Caddy
+      DB_URL: jdbc:mysql://movie-ticket-mysql:3306/movie_ticket_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Ho_Chi_Minh
       DB_USERNAME: root
       FIREBASE_CREDENTIALS_PATH: file:/app/secrets/firebase-service-account.json
       TZ: Asia/Ho_Chi_Minh
