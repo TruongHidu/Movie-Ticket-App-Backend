@@ -27,11 +27,14 @@ public class MovieAdminController {
     public String listMovies(@RequestParam(value = "status", required = false) Integer status, Model model) {
         List<Movie> movies;
         if (status == null) {
-            movies = movieRepository.findByStatusOrderByIdPhimDesc(1); // Use repository directly here if needed for admin listing
+            // "Tất cả": hiển thị cả phim đang hoạt động lẫn đã khóa
+            movies = movieRepository.findAll(org.springframework.data.domain.Sort.by(
+                    org.springframework.data.domain.Sort.Direction.DESC, "idPhim"));
         } else {
             movies = movieRepository.findByStatusOrderByIdPhimDesc(status);
         }
         model.addAttribute("movies", movies);
+        model.addAttribute("currentStatus", status);
         return "movie/movies"; // Assumes you have a view named movies.html in
                                // src/main/resources/templates/movie/
     }

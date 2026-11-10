@@ -1,135 +1,69 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản lý xuất chiếu</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <style>
-        :root {
-            --primary: #4e73df;
-            --secondary: #6f42c1;
-            --success: #1cc88a;
-            --info: #36b9cc;
-            --warning: #f6c23e;
-            --danger: #e74a3b;
-            --light: #f8f9fc;
-            --dark: #5a5c69;
-        }
-        
-        body {
-            background-color: #f8f9fc;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        .page-header {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            color: white;
-            padding: 1.5rem;
-            margin: -1rem -1rem 2rem -1rem;
-            border-radius: 0 0 15px 15px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        }
-        
-        .table-view {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-            overflow: hidden;
-        }
-        
-        .table thead th {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 1rem;
-            font-weight: 600;
-        }
-        
-        .table tbody td {
-            padding: 1rem;
-            vertical-align: middle;
-        }
-        
-        .table tbody tr:hover {
-            background-color: #f8f9fc;
-        }
-        
-        .action-buttons .btn {
-            border-radius: 20px;
-            padding: 0.25rem 0.75rem;
-            font-size: 0.8rem;
-            margin-right: 0.5rem;
-        }
-        
-        @media (max-width: 768px) {
-            .table-responsive {
-                overflow-x: auto;
-            }
-        }
-    </style>
-</head>
-<body class="container mt-4">
-    <!-- Header -->
-    <div class="page-header">
-        <div class="d-flex justify-content-between align-items-center">
-            <h1><i class="bi bi-clock me-2"></i>Quản lý xuất chiếu</h1>
-            <a th:href="@{/admin}" class="btn btn-light">
-                <i class="bi bi-arrow-left me-1"></i>Về Dashboard
-            </a>
-        </div>
-    </div>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:replace="~{fragments/admin :: head('Khung giờ chiếu')}"></head>
+<body class="admin-body">
+<div class="admin-shell">
+    <aside th:replace="~{fragments/admin :: sidebar('showtimes')}"></aside>
+    <div class="admin-main">
+        <header th:replace="~{fragments/admin :: topbar(null, null, 'Khung giờ chiếu')}"></header>
 
-    <!-- Controls -->
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
-        <div></div>
-        <div>
-            <a th:href="@{/admin/showtimes/add}" class="btn btn-success">
-                <i class="bi bi-plus-circle me-1"></i>Thêm xuất chiếu
-            </a>
-        </div>
-    </div>
+        <main class="admin-content">
+            <div th:replace="~{fragments/admin :: flash}"></div>
 
-    <!-- Table View -->
-    <div class="table-view">
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Khung giờ</th>
-                        <th>Trạng thái</th>
-                        <th>Hành động</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="st : ${showtimes}">
-                        <td th:text="${st.idXuatChieu}"></td>
-                        <td th:text="${st.khungGio}"></td>
-                        <td>
-                            <span th:if="${st.status == 1}" class="badge bg-success">Hoạt động</span>
-                            <span th:if="${st.status == 0}" class="badge bg-secondary">Khóa</span>
-                        </td>
-                        <td>
-                            <div class="action-buttons">
-                                <a th:href="@{/admin/showtimes/edit/{id}(id=${st.idXuatChieu})}" class="btn btn-primary btn-sm">
-                                    <i class="bi bi-pencil"></i> Sửa
-                                </a>
-                                <form th:action="@{'/admin/showtimes/status/' + ${st.idXuatChieu}}" method="post" style="display:inline">
-                                    <button type="submit" class="btn btn-warning btn-sm">
-                                        <span th:if="${st.status == 1}"><i class="bi bi-lock"></i> Khóa</span>
-                                        <span th:if="${st.status == 0}"><i class="bi bi-unlock"></i> Mở</span>
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
+            <div class="page-head">
+                <div>
+                    <h1>Khung giờ chiếu</h1>
+                    <p>Các mốc giờ trong ngày dùng để xếp lịch chiếu.</p>
+                </div>
+                <div class="page-actions">
+                    <a th:href="@{/admin/showtimes/add}" class="btn btn-accent"><i class="bi bi-plus-lg"></i>Thêm khung giờ</a>
+                </div>
+            </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+            <th:block th:if="${!showtimes.isEmpty()}">
+                <div class="toolbar">
+                    <div class="seg" data-status-filter="[data-row]" role="group" aria-label="Lọc theo trạng thái">
+                        <button type="button" class="active" data-value="">Tất cả</button>
+                        <button type="button" data-value="1">Hoạt động</button>
+                        <button type="button" data-value="0">Đã khóa</button>
+                    </div>
+                </div>
+
+                <div class="card-grid" style="grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));">
+                    <div class="tile-card" th:each="st : ${showtimes}" data-row th:data-status="${st.status}">
+                        <div class="tile-top">
+                            <span class="tile-icon"><i class="bi bi-clock"></i></span>
+                            <span th:replace="~{fragments/admin :: activeStatus(${st.status}, 'Hoạt động', 'Đã khóa')}"></span>
+                        </div>
+                        <div>
+                            <div class="stat-value" th:text="${#temporals.format(st.khungGio, 'HH:mm')}">09:00</div>
+                            <div class="tile-sub" th:text="'Mã #' + ${st.idXuatChieu}"></div>
+                        </div>
+                        <div class="tile-foot">
+                            <a th:href="@{/admin/showtimes/edit/{id}(id=${st.idXuatChieu})}" class="btn btn-light btn-sm"><i class="bi bi-pencil"></i>Sửa</a>
+                            <form th:action="@{'/admin/showtimes/status/' + ${st.idXuatChieu}}" method="post"
+                                  th:data-confirm="${st.status == 1} ? 'Khóa khung giờ này?' : 'Mở lại khung giờ này?'">
+                                <button type="submit" class="btn btn-sm" th:classappend="${st.status == 1} ? 'btn-soft-warning' : 'btn-soft-success'">
+                                    <th:block th:if="${st.status == 1}"><i class="bi bi-lock"></i>Khóa</th:block>
+                                    <th:block th:if="${st.status != 1}"><i class="bi bi-unlock"></i>Mở</th:block>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </th:block>
+
+            <section class="panel" th:if="${showtimes.isEmpty()}">
+                <div class="empty-state">
+                    <div class="icon"><i class="bi bi-clock"></i></div>
+                    <h5>Chưa có khung giờ</h5>
+                    <p>Thêm các mốc giờ chiếu (VD: 09:00, 13:30, 19:45).</p>
+                    <a th:href="@{/admin/showtimes/add}" class="btn btn-accent"><i class="bi bi-plus-lg"></i>Thêm khung giờ</a>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+<th:block th:replace="~{fragments/admin :: scripts}"></th:block>
 </body>
 </html>

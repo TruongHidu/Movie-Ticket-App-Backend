@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+
+<!-- ============ <head> dùng chung ============ -->
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title} + ' · MovieTicket Admin'">MovieTicket Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+
+<body>
+
+<!-- ============ Sidebar ============ -->
+<aside th:fragment="sidebar(active)" class="sidebar" id="adminSidebar">
+    <a th:href="@{/admin}" class="sidebar-brand">
+        <span class="brand-mark"><i class="bi bi-film"></i></span>
+        <span class="brand-text">
+            <strong>MovieTicket</strong>
+            <small>Bảng điều khiển quản trị</small>
+        </span>
+    </a>
+
+    <nav class="sidebar-nav">
+        <div class="nav-group-label">Tổng quan</div>
+        <a th:href="@{/admin}" class="nav-link-item" th:classappend="${active == 'dashboard'} ? 'active'">
+            <i class="bi bi-grid-1x2"></i><span>Dashboard</span>
+        </a>
+
+        <div class="nav-group-label">Nội dung</div>
+        <a th:href="@{/admin/movies}" class="nav-link-item" th:classappend="${active == 'movies'} ? 'active'">
+            <i class="bi bi-film"></i><span>Phim</span>
+        </a>
+        <a th:href="@{/admin/banners}" class="nav-link-item" th:classappend="${active == 'banners'} ? 'active'">
+            <i class="bi bi-images"></i><span>Banner</span>
+        </a>
+        <a th:href="@{/admin/promotions}" class="nav-link-item" th:classappend="${active == 'promotions'} ? 'active'">
+            <i class="bi bi-gift"></i><span>Khuyến mãi</span>
+        </a>
+        <a th:href="@{/admin/food-drink}" class="nav-link-item" th:classappend="${active == 'food'} ? 'active'">
+            <i class="bi bi-cup-straw"></i><span>Combo bắp nước</span>
+        </a>
+
+        <div class="nav-group-label">Rạp &amp; lịch chiếu</div>
+        <a th:href="@{/admin/rooms}" class="nav-link-item" th:classappend="${active == 'rooms'} ? 'active'">
+            <i class="bi bi-door-open"></i><span>Phòng chiếu</span>
+        </a>
+        <a th:href="@{/admin/seat-types}" class="nav-link-item" th:classappend="${active == 'seattypes'} ? 'active'">
+            <i class="bi bi-grid-3x3-gap"></i><span>Loại ghế</span>
+        </a>
+        <a th:href="@{/admin/showtimes}" class="nav-link-item" th:classappend="${active == 'showtimes'} ? 'active'">
+            <i class="bi bi-clock"></i><span>Khung giờ chiếu</span>
+        </a>
+        <a th:href="@{/admin/schedules}" class="nav-link-item" th:classappend="${active == 'schedules'} ? 'active'">
+            <i class="bi bi-calendar3"></i><span>Lịch chiếu</span>
+        </a>
+
+        <div class="nav-group-label">Giao dịch</div>
+        <a th:href="@{/admin/invoices}" class="nav-link-item" th:classappend="${active == 'invoices'} ? 'active'">
+            <i class="bi bi-receipt"></i><span>Hóa đơn</span>
+        </a>
+        <a th:href="@{/admin/paymentMethod}" class="nav-link-item" th:classappend="${active == 'payments'} ? 'active'">
+            <i class="bi bi-credit-card-2-front"></i><span>Thanh toán</span>
+        </a>
+
+        <div class="nav-group-label">Khách hàng</div>
+        <a th:href="@{/admin/users}" class="nav-link-item" th:classappend="${active == 'users'} ? 'active'">
+            <i class="bi bi-people"></i><span>Người dùng</span>
+        </a>
+    </nav>
+
+    <div class="sidebar-footer" th:if="${currentAdmin != null}">
+        <div class="sidebar-user">
+            <span class="avatar" th:text="${currentAdmin.initials()}">A</span>
+            <div class="who">
+                <strong th:text="${currentAdmin.name}">Admin</strong>
+                <small th:text="${currentAdmin.email}">admin@example.com</small>
+            </div>
+            <form th:action="@{/admin/logout}" method="post" class="m-0">
+                <button type="submit" class="logout btn p-0 border-0" title="Đăng xuất" aria-label="Đăng xuất">
+                    <i class="bi bi-box-arrow-right"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+</aside>
+
+<!-- ============ Topbar ============ -->
+<header th:fragment="topbar(parent, parentUrl, title)" class="topbar">
+    <button type="button" class="topbar-toggle" data-sidebar-toggle aria-label="Mở menu">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <nav class="breadcrumb-lite" aria-label="breadcrumb">
+        <a th:href="@{/admin}"><i class="bi bi-house-door"></i></a>
+        <th:block th:if="${parent != null}">
+            <i class="bi bi-chevron-right sep"></i>
+            <a th:href="@{${parentUrl}}" th:text="${parent}">Mục</a>
+        </th:block>
+        <i class="bi bi-chevron-right sep"></i>
+        <span class="current" th:text="${title}">Trang</span>
+    </nav>
+
+    <div class="topbar-right">
+        <span class="topbar-date">
+            <i class="bi bi-calendar-event me-1"></i>
+            <span th:text="${#temporals.format(#temporals.createToday(), 'dd/MM/yyyy')}">01/01/2026</span>
+        </span>
+
+        <div class="dropdown" th:if="${currentAdmin != null}">
+            <button class="topbar-user dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <span class="avatar" th:text="${currentAdmin.initials()}">A</span>
+                <span class="name" th:text="${currentAdmin.name}">Admin</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li class="dropdown-header">
+                    Đăng nhập với<br>
+                    <strong class="text-dark" th:text="${currentAdmin.email}">admin@example.com</strong>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" th:href="@{/admin}"><i class="bi bi-grid-1x2"></i>Dashboard</a></li>
+                <li>
+                    <form th:action="@{/admin/logout}" method="post" class="m-0">
+                        <button type="submit" class="dropdown-item text-danger"><i class="bi bi-box-arrow-right"></i>Đăng xuất</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+</header>
+
+<!-- ============ Thông báo flash ============ -->
+<th:block th:fragment="flash">
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert" data-autohide>
+        <i class="bi bi-check-circle-fill"></i>
+        <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+    </div>
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+    </div>
+</th:block>
+
+<!-- ============ Trạng thái hóa đơn ============ -->
+<th:block th:fragment="invoiceStatus(status)">
+    <span th:if="${status == 0}" class="pill pill-warning">Chờ thanh toán</span>
+    <span th:if="${status == 1}" class="pill pill-info">Đã thanh toán</span>
+    <span th:if="${status == 2}" class="pill pill-success">Hoàn thành</span>
+    <span th:if="${status == 3}" class="pill pill-danger">Đã hủy</span>
+</th:block>
+
+<!-- ============ Trạng thái bật/tắt (1 = hoạt động) ============ -->
+<th:block th:fragment="activeStatus(status, onText, offText)">
+    <span th:if="${status == 1}" class="pill pill-success" th:text="${onText}">Hoạt động</span>
+    <span th:if="${status != 1}" class="pill pill-neutral" th:text="${offText}">Đã khóa</span>
+</th:block>
+
+<!-- ============ Scripts dùng chung ============ -->
+<th:block th:fragment="scripts">
+    <div class="sidebar-backdrop"></div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/admin.js}"></script>
+</th:block>
+
+</body>
+</html>

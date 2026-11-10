@@ -1,139 +1,57 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản lý loại ghế</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <style>
-        :root {
-            --primary: #4e73df;
-            --secondary: #6f42c1;
-            --success: #1cc88a;
-            --info: #36b9cc;
-            --warning: #f6c23e;
-            --danger: #e74a3b;
-            --light: #f8f9fc;
-            --dark: #5a5c69;
-        }
-        
-        body {
-            background-color: #f8f9fc;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        .page-header {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            color: white;
-            padding: 1.5rem;
-            margin: -1rem -1rem 2rem -1rem;
-            border-radius: 0 0 15px 15px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        }
-        
-        .table-view {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-            overflow: hidden;
-        }
-        
-        .table thead th {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 1rem;
-            font-weight: 600;
-        }
-        
-        .table tbody td {
-            padding: 1rem;
-            vertical-align: middle;
-        }
-        
-        .table tbody tr:hover {
-            background-color: #f8f9fc;
-        }
-        
-        .action-buttons .btn {
-            border-radius: 20px;
-            padding: 0.25rem 0.75rem;
-            font-size: 0.8rem;
-            margin-right: 0.5rem;
-        }
-        
-        .price-text {
-            font-weight: 600;
-            color: var(--success);
-        }
-        
-        @media (max-width: 768px) {
-            .table-responsive {
-                overflow-x: auto;
-            }
-        }
-    </style>
-</head>
-<body class="container mt-4">
-    <!-- Header -->
-    <div class="page-header">
-        <div class="d-flex justify-content-between align-items-center">
-            <h1><i class="bi bi-grid-3x3 me-2"></i>Quản lý loại ghế</h1>
-            <a th:href="@{/admin}" class="btn btn-light">
-                <i class="bi bi-arrow-left me-1"></i>Về Dashboard
-            </a>
-        </div>
-    </div>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:replace="~{fragments/admin :: head('Loại ghế')}"></head>
+<body class="admin-body">
+<div class="admin-shell">
+    <aside th:replace="~{fragments/admin :: sidebar('seattypes')}"></aside>
+    <div class="admin-main">
+        <header th:replace="~{fragments/admin :: topbar(null, null, 'Loại ghế')}"></header>
 
-    <!-- Controls -->
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
-        <div></div>
-        <div>
-            <a th:href="@{/admin/seat-types/add}" class="btn btn-success">
-                <i class="bi bi-plus-circle me-1"></i>Thêm loại ghế
-            </a>
-        </div>
-    </div>
+        <main class="admin-content">
+            <div th:replace="~{fragments/admin :: flash}"></div>
 
-    <!-- Table View -->
-    <div class="table-view">
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Tên loại ghế</th>
-                        <th>Đơn giá</th>
-                        <th>Hành động</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="seat : ${seatTypes}">
-                        <td th:text="${seat.idLoaiGhe}"></td>
-                        <td th:text="${seat.tenLoaiGhe}"></td>
-                        <td>
-                            <span class="price-text" th:text="${#numbers.formatDecimal(seat.donGia, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span>
-                        </td>
-                        <td>
-                            <div class="action-buttons">
-                                <a th:href="@{'/admin/seat-types/edit/' + ${seat.idLoaiGhe}}" class="btn btn-primary btn-sm">
-                                    <i class="bi bi-pencil"></i> Sửa
-                                </a>
-                                <form th:action="@{'/admin/seat-types/delete/' + ${seat.idLoaiGhe}}" method="post" style="display:inline">
-                                    <button type="submit" class="btn btn-danger btn-sm"
-                                            onclick="return confirm('Bạn có chắc muốn xóa loại ghế này?')">
-                                        <i class="bi bi-trash"></i> Xóa
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
+            <div class="page-head">
+                <div>
+                    <h1>Loại ghế &amp; giá vé</h1>
+                    <p>Đơn giá của từng loại ghế được dùng để tính tiền vé.</p>
+                </div>
+                <div class="page-actions">
+                    <a th:href="@{/admin/seat-types/add}" class="btn btn-accent"><i class="bi bi-plus-lg"></i>Thêm loại ghế</a>
+                </div>
+            </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+            <div class="card-grid" th:if="${!seatTypes.isEmpty()}">
+                <div class="tile-card" th:each="seat : ${seatTypes}">
+                    <div class="tile-top">
+                        <span class="tile-icon"><i class="bi bi-person-workspace"></i></span>
+                        <span class="tag" th:text="${seat.idLoaiGhe}">GT</span>
+                    </div>
+                    <div>
+                        <h3 class="tile-title" th:text="${seat.tenLoaiGhe}">Ghế thường</h3>
+                        <div class="money fs-4 mt-1" th:text="${#numbers.formatDecimal(seat.donGia, 0, 'POINT', 0, 'COMMA')} + ' đ'">0 đ</div>
+                        <div class="tile-sub">mỗi ghế</div>
+                    </div>
+                    <div class="tile-foot">
+                        <a th:href="@{'/admin/seat-types/edit/' + ${seat.idLoaiGhe}}" class="btn btn-light btn-sm"><i class="bi bi-pencil"></i>Sửa</a>
+                        <form th:action="@{'/admin/seat-types/delete/' + ${seat.idLoaiGhe}}" method="post"
+                              data-confirm="Xóa loại ghế này? Các ghế đang dùng loại này có thể bị ảnh hưởng.">
+                            <button type="submit" class="btn btn-soft-danger btn-sm"><i class="bi bi-trash"></i>Xóa</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <section class="panel" th:if="${seatTypes.isEmpty()}">
+                <div class="empty-state">
+                    <div class="icon"><i class="bi bi-grid-3x3-gap"></i></div>
+                    <h5>Chưa có loại ghế</h5>
+                    <p>Thêm loại ghế (thường, VIP, đôi…) và đơn giá tương ứng.</p>
+                    <a th:href="@{/admin/seat-types/add}" class="btn btn-accent"><i class="bi bi-plus-lg"></i>Thêm loại ghế</a>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+<th:block th:replace="~{fragments/admin :: scripts}"></th:block>
 </body>
 </html>

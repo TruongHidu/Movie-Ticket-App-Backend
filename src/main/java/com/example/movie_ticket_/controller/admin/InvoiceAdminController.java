@@ -122,7 +122,18 @@ public class InvoiceAdminController {
                 ));
 
 
+        // Sắp xếp doanh thu giảm dần để hiển thị dạng xếp hạng
+        Map<String, java.math.BigDecimal> revenueSorted = new java.util.LinkedHashMap<>();
+        revenueByMovie.entrySet().stream()
+                .sorted(Map.Entry.<String, java.math.BigDecimal>comparingByValue().reversed())
+                .forEach(e -> revenueSorted.put(e.getKey(), e.getValue()));
+        revenueByMovie = revenueSorted;
+        java.math.BigDecimal revenueMax = revenueSorted.values().stream()
+                .findFirst().orElse(java.math.BigDecimal.ZERO);
+
         model.addAttribute("invoices", invoices);
+        model.addAttribute("searchStatus", status);
+        model.addAttribute("revenueMax", revenueMax);
         model.addAttribute("searchMovieName", movieName);
         model.addAttribute("searchMonth", month);
         model.addAttribute("searchYear", searchYear);

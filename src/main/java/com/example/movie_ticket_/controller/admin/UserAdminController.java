@@ -41,13 +41,13 @@ public class UserAdminController {
     @PostMapping("/edit/{id}")
     public String updateUser(@PathVariable Long id, @ModelAttribute User user) {
         userService.updateUser(id, user);
-        return "redirect:/users";
+        return "redirect:/admin/users";
     }
 
-    @GetMapping("/status/{id}/{status}")
+    @PostMapping("/status/{id}/{status}")
     public String changeStatus(@PathVariable Long id, @PathVariable int status) {
         userService.changeUserStatus(id, status);
-        return "redirect:/users";
+        return "redirect:/admin/users";
     }
 
 }

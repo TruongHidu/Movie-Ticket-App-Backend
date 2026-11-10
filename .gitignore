@@ -32,6 +32,9 @@ build/
 ### VS Code ###
 .vscode/
 
-### Environment Variables ###
-src/main/resources/application.properties
-application.properties
+### Environment Variables / Secrets ###
+.env
+.env.*
+!.env.example
+firebase-service-account.json
+hs_err_pid*.log

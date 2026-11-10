@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -71,4 +72,17 @@ WHERE i.status = 1
 
 
     boolean existsBySchedule_IdLichChieu(Long scheduleId);
+
+    // ===== Thống kê cho dashboard admin =====
+    long countByStatus(int status);
+
+    List<Invoice> findTop6ByOrderByCreatedAtDesc();
+
+    List<Invoice> findByStatusInAndCreatedAtGreaterThanEqual(List<Integer> statuses, LocalDateTime from);
+
+    @Query("SELECT COALESCE(SUM(i.totalPrice), 0) FROM Invoice i WHERE i.status IN (1, 2)")
+    BigDecimal sumPaidRevenue();
+
+    @Query("SELECT COALESCE(SUM(i.totalPrice), 0) FROM Invoice i WHERE i.status IN (1, 2) AND i.createdAt >= :from")
+    BigDecimal sumPaidRevenueSince(@Param("from") LocalDateTime from);
 }

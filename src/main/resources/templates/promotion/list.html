@@ -1,149 +1,87 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản lý khuyến mãi</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <style>
-        :root {
-            --primary: #4e73df;
-            --secondary: #6f42c1;
-            --success: #1cc88a;
-            --info: #36b9cc;
-            --warning: #f6c23e;
-            --danger: #e74a3b;
-            --light: #f8f9fc;
-            --dark: #5a5c69;
-        }
-        
-        body {
-            background-color: #f8f9fc;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        .page-header {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            color: white;
-            padding: 1.5rem;
-            margin: -1rem -1rem 2rem -1rem;
-            border-radius: 0 0 15px 15px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        }
-        
-        .table-view {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-            overflow: hidden;
-        }
-        
-        .table thead th {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 1rem;
-            font-weight: 600;
-        }
-        
-        .table tbody td {
-            padding: 1rem;
-            vertical-align: middle;
-        }
-        
-        .table tbody tr:hover {
-            background-color: #f8f9fc;
-        }
-        
-        .action-buttons .btn {
-            border-radius: 20px;
-            padding: 0.25rem 0.75rem;
-            font-size: 0.8rem;
-            margin-right: 0.5rem;
-        }
-        
-        .promo-image {
-            width: 100px;
-            height: 100px;
-            object-fit: cover;
-            border-radius: 8px;
-        }
-        
-        @media (max-width: 768px) {
-            .table-responsive {
-                overflow-x: auto;
-            }
-        }
-    </style>
-</head>
-<body class="container mt-4">
-    <!-- Header -->
-    <div class="page-header">
-        <div class="d-flex justify-content-between align-items-center">
-            <h1><i class="bi bi-gift me-2"></i>Quản lý khuyến mãi</h1>
-            <a th:href="@{/admin}" class="btn btn-light">
-                <i class="bi bi-arrow-left me-1"></i>Về Dashboard
-            </a>
-        </div>
-    </div>
+<head th:replace="~{fragments/admin :: head('Khuyến mãi')}"></head>
+<body class="admin-body">
+<div class="admin-shell">
+    <aside th:replace="~{fragments/admin :: sidebar('promotions')}"></aside>
+    <div class="admin-main">
+        <header th:replace="~{fragments/admin :: topbar(null, null, 'Khuyến mãi')}"></header>
 
-    <!-- Controls -->
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
-        <div></div>
-        <div>
-            <a href="/admin/promotions/add" class="btn btn-success">
-                <i class="bi bi-plus-circle me-1"></i>Thêm khuyến mãi
-            </a>
-        </div>
-    </div>
+        <main class="admin-content">
+            <div th:replace="~{fragments/admin :: flash}"></div>
 
-    <!-- Table View -->
-    <div class="table-view">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Tiêu đề</th>
-                        <th>Mô tả</th>
-                        <th>Hình ảnh</th>
-                        <th>Trạng thái</th>
-                        <th>Hành động</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="promo : ${promotions}">
-                        <td th:text="${promo.id}"></td>
-                        <td th:text="${promo.title}"></td>
-                        <td>
-                            <div style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" 
-                                 th:text="${promo.description}"></div>
-                        </td>
-                        <td>
-                            <img th:src="${promo.imageUrl}" alt="Khuyến mãi" class="promo-image">
-                        </td>
-                        <td>
-                            <span th:if="${promo.status == 1}" class="badge bg-success">Hoạt động</span>
-                            <span th:if="${promo.status == 0}" class="badge bg-secondary">Ẩn</span>
-                        </td>
-                        <td>
-                            <div class="action-buttons">
-                                <a th:href="@{'/admin/promotions/edit/' + ${promo.id}}" class="btn btn-primary btn-sm">
-                                    <i class="bi bi-pencil"></i> Sửa
-                                </a>
-                                <a th:href="@{'/admin/promotions/delete/' + ${promo.id}}" class="btn btn-danger btn-sm"
-                                   onclick="return confirm('Bạn có chắc muốn xóa khuyến mãi này?')">
-                                    <i class="bi bi-trash"></i> Xóa
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
+            <div class="page-head">
+                <div>
+                    <h1>Khuyến mãi</h1>
+                    <p><span th:text="${promotions.size()}">0</span> chương trình</p>
+                </div>
+                <div class="page-actions">
+                    <a th:href="@{/admin/promotions/add}" class="btn btn-accent"><i class="bi bi-plus-lg"></i>Thêm khuyến mãi</a>
+                </div>
+            </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+            <div class="toolbar">
+                <div class="toolbar-left">
+                    <div class="seg" data-status-filter="[data-row]" role="group" aria-label="Lọc theo trạng thái">
+                        <button type="button" class="active" data-value="">Tất cả</button>
+                        <button type="button" data-value="1">Hoạt động</button>
+                        <button type="button" data-value="0">Ẩn</button>
+                    </div>
+                </div>
+                <div class="toolbar-right">
+                    <div class="search-box">
+                        <i class="bi bi-search"></i>
+                        <input type="search" class="form-control" placeholder="Tìm khuyến mãi…" data-search-target="[data-row]" aria-label="Tìm khuyến mãi">
+                    </div>
+                </div>
+            </div>
+
+            <section class="panel">
+                <div class="table-wrap" th:if="${!promotions.isEmpty()}">
+                    <table class="table table-modern table-hover">
+                        <thead>
+                        <tr>
+                            <th>Chương trình</th>
+                            <th>Mô tả</th>
+                            <th>Trạng thái</th>
+                            <th class="actions-col">Thao tác</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="promo : ${promotions}" data-row th:data-status="${promo.status}">
+                            <td>
+                                <div class="cell-media">
+                                    <img th:if="${promo.imageUrl}" th:src="${promo.imageUrl}" class="thumb" alt="" loading="lazy">
+                                    <span th:unless="${promo.imageUrl}" class="thumb"><i class="bi bi-gift"></i></span>
+                                    <div>
+                                        <div class="title" th:text="${promo.title}"></div>
+                                        <div class="sub" th:text="'#' + ${promo.id}"></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><div class="truncate text-muted" style="max-width:380px" th:text="${promo.description}" th:title="${promo.description}"></div></td>
+                            <td><span th:replace="~{fragments/admin :: activeStatus(${promo.status}, 'Hoạt động', 'Ẩn')}"></span></td>
+                            <td class="actions-col">
+                                <div class="row-actions">
+                                    <a th:href="@{'/admin/promotions/edit/' + ${promo.id}}" class="btn btn-light btn-icon btn-sm" title="Sửa"><i class="bi bi-pencil"></i></a>
+                                    <a th:href="@{'/admin/promotions/delete/' + ${promo.id}}" class="btn btn-soft-danger btn-icon btn-sm" title="Xóa"
+                                       data-confirm="Xóa khuyến mãi này? Hành động không thể hoàn tác."><i class="bi bi-trash"></i></a>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="empty-state" th:if="${promotions.isEmpty()}">
+                    <div class="icon"><i class="bi bi-gift"></i></div>
+                    <h5>Chưa có khuyến mãi</h5>
+                    <p>Tạo chương trình khuyến mãi để thu hút khách hàng.</p>
+                    <a th:href="@{/admin/promotions/add}" class="btn btn-accent"><i class="bi bi-plus-lg"></i>Thêm khuyến mãi</a>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+<th:block th:replace="~{fragments/admin :: scripts}"></th:block>
 </body>
 </html>

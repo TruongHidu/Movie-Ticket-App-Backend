@@ -1,27 +1,43 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>Add Showtime</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="container mt-4">
-<h1>Add Showtime</h1>
-<form th:action="@{/admin/showtimes/add}" th:object="${showtime}" method="post">
-    <div class="mb-3">
-        <label class="form-label">Khung giờ</label>
-        <input type="time" class="form-control" th:field="*{khungGio}" required>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:replace="~{fragments/admin :: head('Thêm khung giờ')}"></head>
+<body class="admin-body">
+<div class="admin-shell">
+    <aside th:replace="~{fragments/admin :: sidebar('showtimes')}"></aside>
+    <div class="admin-main">
+        <header th:replace="~{fragments/admin :: topbar('Khung giờ chiếu', '/admin/showtimes', 'Thêm mới')}"></header>
+
+        <main class="admin-content">
+            <div class="page-head">
+                <div><h1>Thêm khung giờ chiếu</h1></div>
+            </div>
+
+            <form th:action="@{/admin/showtimes/add}" th:object="${showtime}" method="post" class="form-narrow" style="max-width:560px">
+                <section class="panel">
+                    <div class="panel-body">
+                        <div class="row g-3">
+                            <div class="col-sm-6">
+                                <label class="form-label" for="khungGio">Giờ chiếu<span class="req">*</span></label>
+                                <input type="time" id="khungGio" class="form-control" th:field="*{khungGio}" required>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label" for="status">Trạng thái</label>
+                                <select id="status" class="form-select" th:field="*{status}">
+                                    <option value="1">Hoạt động</option>
+                                    <option value="0">Khóa</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-foot">
+                        <a th:href="@{/admin/showtimes}" class="btn btn-light">Hủy</a>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-check2"></i>Lưu</button>
+                    </div>
+                </section>
+            </form>
+        </main>
     </div>
-
-    <div class="mb-3">
-        <label class="form-label">Trạng thái</label>
-        <select class="form-control" th:field="*{status}">
-            <option value="1">Hoạt động</option>
-            <option value="0">Ngưng</option>
-        </select>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Lưu</button>
-</form>
-
+</div>
+<th:block th:replace="~{fragments/admin :: scripts}"></th:block>
 </body>
 </html>

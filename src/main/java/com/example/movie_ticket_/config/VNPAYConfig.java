@@ -1,12 +1,31 @@
 package com.example.movie_ticket_.config;
 
+import lombok.Getter;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
+/**
+ * Cau hinh VNPAY. Gia tri bi mat duoc nap tu .env / bien moi truong
+ * thong qua application.properties (vnpay.*), khong hardcode trong code.
+ */
+@Getter
+@Component
 public class VNPAYConfig {
-    public static final String vnp_TmnCode = "QL8I2GXS"; // Mã website của bạn
-    public static final String vnp_HashSecret = "SC8JFJI3NSLCBPEXDOS1956TIOW0X462"; // Chuỗi bí mật
-    public static final String vnp_Url = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-    public static final String vnp_ReturnUrl = "http://nvtcinema.id.vn/api/payment/vnpay-return";
-    public static final String vnp_Version = "2.1.0";
-    public static final String vnp_Command = "pay";
-    public static final String orderType = "movie_ticket";
+    public static final String VERSION = "2.1.0";
+    public static final String COMMAND = "pay";
+
+    @Value("${vnpay.tmn-code}")
+    private String tmnCode;
+
+    @Value("${vnpay.hash-secret}")
+    private String hashSecret;
+
+    @Value("${vnpay.url}")
+    private String url;
+
+    @Value("${vnpay.return-url}")
+    private String returnUrl;
+
+    @Value("${vnpay.order-type}")
+    private String orderType;
 }

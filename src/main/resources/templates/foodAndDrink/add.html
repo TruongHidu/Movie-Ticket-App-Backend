@@ -1,47 +1,70 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Thêm Combo Mới</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
-</head>
-<body class="container mt-4">
-<h2 class="text-center mb-4">➕ Thêm Combo Đồ ăn & Thức uống</h2>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:replace="~{fragments/admin :: head('Thêm combo')}"></head>
+<body class="admin-body">
+<div class="admin-shell">
+    <aside th:replace="~{fragments/admin :: sidebar('food')}"></aside>
+    <div class="admin-main">
+        <header th:replace="~{fragments/admin :: topbar('Combo bắp nước', '/admin/food-drink', 'Thêm mới')}"></header>
 
-<form th:action="@{/admin/food-drink/add}" method="post" enctype="multipart/form-data" class="w-50 mx-auto">
+        <main class="admin-content">
+            <div class="page-head">
+                <div>
+                    <h1>Thêm combo</h1>
+                    <p>Đồ ăn &amp; thức uống khách có thể đặt kèm vé.</p>
+                </div>
+            </div>
 
-    <div class="mb-3">
-        <label class="form-label">Tên Combo</label>
-        <input type="text" name="nameCombo" class="form-control" required>
+            <form th:action="@{/admin/food-drink/add}" method="post" enctype="multipart/form-data" class="form-narrow">
+                <section class="panel">
+                    <div class="panel-body">
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-8">
+                                <label class="form-label" for="nameCombo">Tên combo<span class="req">*</span></label>
+                                <input type="text" id="nameCombo" name="nameCombo" class="form-control" placeholder="VD: Combo 1 bắp + 2 nước" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" for="price">Giá<span class="req">*</span></label>
+                                <div class="input-group">
+                                    <input type="number" min="0" step="any" id="price" name="price" class="form-control" required>
+                                    <span class="input-group-text">đ</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="descript">Mô tả<span class="req">*</span></label>
+                            <input type="text" id="descript" name="descript" class="form-control" placeholder="1 bắp lớn vị caramel, 2 nước ngọt size L" required>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <label class="form-label">Ảnh combo<span class="req">*</span></label>
+                                <label class="upload-drop" data-upload data-max-mb="10">
+                                    <span class="upload-thumb"><i class="bi bi-image"></i></span>
+                                    <span class="upload-meta">
+                                        <strong data-upload-name>Chọn ảnh</strong>
+                                        <small data-upload-hint>Kéo thả hoặc bấm để chọn</small>
+                                    </span>
+                                    <input type="file" name="imageFile" accept="image/*" required>
+                                </label>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" for="status">Trạng thái</label>
+                                <select id="status" name="status" class="form-select">
+                                    <option value="1">Đang bán</option>
+                                    <option value="0">Tạm ẩn</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-foot">
+                        <a th:href="@{/admin/food-drink}" class="btn btn-light">Hủy</a>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-check2"></i>Thêm combo</button>
+                    </div>
+                </section>
+            </form>
+        </main>
     </div>
-    <div class="mb-3">
-        <label class="form-label">Mô tả</label>
-        <input type="text" name="descript" class="form-control" required>
-    </div>
-
-
-    <div class="mb-3">
-        <label class="form-label">Giá</label>
-        <input type="number" name="price" class="form-control" required>
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Trạng thái</label>
-        <select name="status" class="form-select">
-            <option value="1">Hoạt động</option>
-            <option value="0">Tạm ẩn</option>
-        </select>
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Ảnh Combo</label>
-        <input type="file" name="imageFile" class="form-control" accept="image/*" required>
-    </div>
-
-    <div class="text-center">
-        <button type="submit" class="btn btn-success">Thêm Combo</button>
-        <a href="/admin/food-drink" class="btn btn-secondary">Quay lại</a>
-    </div>
-</form>
+</div>
+<th:block th:replace="~{fragments/admin :: scripts}"></th:block>
 </body>
 </html>

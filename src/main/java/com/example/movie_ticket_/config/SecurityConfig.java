@@ -26,8 +26,9 @@ public class SecurityConfig {
                                 "/api/auth/**",   // login/register
                                 "/admin/**",
                                 "/",
-                                "/login-admin",
                                 "/logout-admin",
+                                "/css/**", "/js/**", "/images/**", "/favicon.ico",
+                                "/error",
                                 "/api/movies/**",
                                 "/api/schedules/**",
                                 "/api/payment-methods/**",

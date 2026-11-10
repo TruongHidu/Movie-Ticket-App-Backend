@@ -1,27 +1,50 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>Sửa loại ghế</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="container mt-4">
-<h1 class="mb-3">Sửa loại ghế</h1>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:replace="~{fragments/admin :: head('Sửa loại ghế')}"></head>
+<body class="admin-body">
+<div class="admin-shell">
+    <aside th:replace="~{fragments/admin :: sidebar('seattypes')}"></aside>
+    <div class="admin-main">
+        <header th:replace="~{fragments/admin :: topbar('Loại ghế', '/admin/seat-types', 'Chỉnh sửa')}"></header>
 
-<form th:action="@{'/admin/seat-types/edit/' + ${seatType.idLoaiGhe}}" method="post" th:object="${seatType}">
-    <div class="mb-3">
-        <label class="form-label">ID loại ghế</label>
-        <input type="text" class="form-control" th:field="*{idLoaiGhe}" readonly>
+        <main class="admin-content">
+            <div class="page-head">
+                <div>
+                    <h1 th:text="${seatType.tenLoaiGhe}">Sửa loại ghế</h1>
+                    <p th:text="'Mã loại ghế ' + ${seatType.idLoaiGhe}"></p>
+                </div>
+            </div>
+
+            <form th:action="@{'/admin/seat-types/edit/' + ${seatType.idLoaiGhe}}" method="post" th:object="${seatType}" class="form-narrow">
+                <section class="panel">
+                    <div class="panel-body">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label">Mã</label>
+                                <input type="text" class="form-control" th:field="*{idLoaiGhe}" readonly>
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label" for="tenLoaiGhe">Tên loại ghế<span class="req">*</span></label>
+                                <input type="text" class="form-control" th:field="*{tenLoaiGhe}" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" for="donGia">Đơn giá<span class="req">*</span></label>
+                                <div class="input-group">
+                                    <input type="number" min="0" step="any" class="form-control" th:field="*{donGia}" required>
+                                    <span class="input-group-text">đ</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-foot">
+                        <a th:href="@{/admin/seat-types}" class="btn btn-light">Hủy</a>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-check2"></i>Cập nhật</button>
+                    </div>
+                </section>
+            </form>
+        </main>
     </div>
-    <div class="mb-3">
-        <label class="form-label">Tên loại ghế</label>
-        <input type="text" class="form-control" th:field="*{tenLoaiGhe}" required>
-    </div>
-    <div class="mb-3">
-        <label class="form-label">Đơn giá</label>
-        <input type="number" step="0.01" class="form-control" th:field="*{donGia}" required>
-    </div>
-    <button type="submit" class="btn btn-primary">Cập nhật</button>
-    <a th:href="@{/admin/seat-types}" class="btn btn-secondary">Hủy</a>
-</form>
+</div>
+<th:block th:replace="~{fragments/admin :: scripts}"></th:block>
 </body>
 </html>

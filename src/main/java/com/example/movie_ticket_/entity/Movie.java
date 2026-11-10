@@ -41,6 +41,7 @@ public class Movie {
 
     // ✅ Lưu ngày/tháng/năm
     @JsonFormat(pattern = "dd/MM/yyyy") // hiển thị JSON dạng dd/MM/yyyy
+    @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) // form HTML dùng yyyy-MM-dd
     @Column(name = "NAMPH", columnDefinition = "DATE")
     private LocalDate namPhatHanh;
 

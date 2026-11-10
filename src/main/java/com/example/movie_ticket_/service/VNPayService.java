@@ -3,6 +3,7 @@ package com.example.movie_ticket_.service;
 
 import com.example.movie_ticket_.config.VNPAYConfig;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.net.URLEncoder;
@@ -11,13 +12,16 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Service
+@RequiredArgsConstructor
 public class VNPayService {
+
+    private final VNPAYConfig vnpayConfig;
 
     public String createPaymentUrl(Long invoiceId, Long amount, HttpServletRequest request) throws Exception {
         Map<String, String> vnp_Params = new HashMap<>();
-        vnp_Params.put("vnp_Version", VNPAYConfig.vnp_Version);
-        vnp_Params.put("vnp_Command", VNPAYConfig.vnp_Command);
-        vnp_Params.put("vnp_TmnCode", VNPAYConfig.vnp_TmnCode);
+        vnp_Params.put("vnp_Version", VNPAYConfig.VERSION);
+        vnp_Params.put("vnp_Command", VNPAYConfig.COMMAND);
+        vnp_Params.put("vnp_TmnCode", vnpayConfig.getTmnCode());
         vnp_Params.put("vnp_Amount", String.valueOf(amount * 100)); // nhân 100 theo quy định VNPay
         vnp_Params.put("vnp_CurrCode", "VND");
 
@@ -25,13 +29,13 @@ public class VNPayService {
         vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
 
         vnp_Params.put("vnp_OrderInfo", "Thanh toan ve xem phim #" + invoiceId);
-        vnp_Params.put("vnp_OrderType", VNPAYConfig.orderType);
+        vnp_Params.put("vnp_OrderType", vnpayConfig.getOrderType());
         vnp_Params.put("vnp_Locale", "vn");
 
         String ipAddr = request.getRemoteAddr();
         vnp_Params.put("vnp_IpAddr", ipAddr);
 
-        vnp_Params.put("vnp_ReturnUrl", VNPAYConfig.vnp_ReturnUrl);
+        vnp_Params.put("vnp_ReturnUrl", vnpayConfig.getReturnUrl());
 
         Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
@@ -58,10 +62,10 @@ public class VNPayService {
         hashData.setLength(hashData.length() - 1);
         query.setLength(query.length() - 1);
 
-        String secureHash = hmacSHA512(VNPAYConfig.vnp_HashSecret, hashData.toString());
+        String secureHash = hmacSHA512(vnpayConfig.getHashSecret(), hashData.toString());
         query.append("&vnp_SecureHash=").append(secureHash);
 
-        return VNPAYConfig.vnp_Url + "?" + query.toString();
+        return vnpayConfig.getUrl() + "?" + query.toString();
     }
 
     private String hmacSHA512(String key, String data) throws Exception {

@@ -1,0 +1,49 @@
+# Chạy: docker compose up -d --build
+# Cần có file .env cùng thư mục (copy từ .env.example) và file Firebase service account.
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: movie-ticket-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: movie_ticket_db
+      TZ: Asia/Ho_Chi_Minh
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    # Không mở cổng 3306 ra ngoài internet. Cần vào DB thì dùng:
+    #   docker compose exec mysql mysql -uroot -p movie_ticket_db
+
+  app:
+    build: .
+    image: movie-ticket-app
+    container_name: movie-ticket-app
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      # Ghi đè các giá trị trong .env cho môi trường Docker
+      DB_URL: jdbc:mysql://mysql:3306/movie_ticket_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Ho_Chi_Minh
+      DB_USERNAME: root
+      FIREBASE_CREDENTIALS_PATH: file:/app/secrets/firebase-service-account.json
+      TZ: Asia/Ho_Chi_Minh
+    volumes:
+      - type: bind
+        # Đường dẫn file Firebase trên máy chủ, đổi bằng FIREBASE_KEY_FILE trong .env nếu cần
+        source: ${FIREBASE_KEY_FILE:-/opt/secrets/firebase-service-account.json}
+        target: /app/secrets/firebase-service-account.json
+        read_only: true
+    ports:
+      # Cổng mở ra ngoài, đổi bằng APP_PORT trong .env nếu cần
+      - "${APP_PORT:-8081}:8081"
+
+volumes:
+  mysql_data:

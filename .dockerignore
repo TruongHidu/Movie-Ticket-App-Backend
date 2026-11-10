@@ -1,0 +1,14 @@
+# Không đưa secret vào image
+.env
+.env.*
+**/firebase-service-account.json
+
+# Không cần cho việc build
+.git
+.idea
+.vscode
+target
+hs_err_pid*.log
+HELP.md
+Dockerfile
+docker-compose.yml

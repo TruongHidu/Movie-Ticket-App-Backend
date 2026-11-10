@@ -1,266 +1,162 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <style>
-        :root {
-            --primary: #4e73df;
-            --secondary: #6f42c1;
-            --success: #1cc88a;
-            --info: #36b9cc;
-            --warning: #f6c23e;
-            --danger: #e74a3b;
-            --light: #f8f9fc;
-            --dark: #5a5c69;
-        }
-        
-        body {
-            background-color: #f8f9fc;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        .dashboard-header {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            color: white;
-            padding: 2rem 0;
-            margin-bottom: 2rem;
-            border-radius: 0 0 15px 15px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        }
-        
-        .dashboard-card {
-            border: none;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-            transition: transform 0.3s, box-shadow 0.3s;
-            height: 100%;
-        }
-        
-        .dashboard-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-        }
-        
-        .card-icon {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-        }
-        
-        .movie-card { border-top: 4px solid var(--primary); }
-        .user-card { border-top: 4px solid var(--success); }
-        .seat-card { border-top: 4px solid var(--info); }
-        .room-card { border-top: 4px solid var(--warning); }
-        .showtime-card { border-top: 4px solid var(--secondary); }
-        .schedule-card { border-top: 4px solid var(--danger); }
-        
-        .movie-card .card-icon { color: var(--primary); }
-        .user-card .card-icon { color: var(--success); }
-        .seat-card .card-icon { color: var(--info); }
-        .room-card .card-icon { color: var(--warning); }
-        .showtime-card .card-icon { color: var(--secondary); }
-        .schedule-card .card-icon { color: var(--danger); }
-        
-        .btn-card {
-            border-radius: 20px;
-            padding: 0.5rem 1.5rem;
-            font-weight: 500;
-            transition: all 0.3s;
-        }
-        
-        .movie-card .btn-card { background-color: var(--primary); border-color: var(--primary); }
-        .user-card .btn-card { background-color: var(--success); border-color: var(--success); }
-        .seat-card .btn-card { background-color: var(--info); border-color: var(--info); }
-        .room-card .btn-card { background-color: var(--warning); border-color: var(--warning); color: #000; }
-        .showtime-card .btn-card { background-color: var(--secondary); border-color: var(--secondary); }
-        .schedule-card .btn-card { background-color: var(--danger); border-color: var(--danger); }
-        
-        .btn-card:hover {
-            opacity: 0.9;
-            transform: scale(1.05);
-        }
-        
-        .footer {
-            background-color: white;
-            padding: 1.5rem 0;
-            margin-top: 3rem;
-            border-radius: 15px 15px 0 0;
-            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
-            color: var(--dark);
-        }
-    </style>
-</head>
-<body>
-    <!-- Header -->
-    <div class="dashboard-header">
-        <div class="container d-flex justify-content-between align-items-center">
-            <!-- Title -->
-            <div>
-                <h1 class="fw-bold mb-1">
-                    <i class="bi bi-speedometer2 me-2"></i>Admin Dashboard
-                </h1>
-                <p class="mb-0 opacity-75">Quản lý hệ thống rạp chiếu phim</p>
-            </div>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:replace="~{fragments/admin :: head('Dashboard')}"></head>
+<body class="admin-body">
+<div class="admin-shell">
+    <aside th:replace="~{fragments/admin :: sidebar('dashboard')}"></aside>
+    <div class="admin-main">
+        <header th:replace="~{fragments/admin :: topbar(null, null, 'Dashboard')}"></header>
 
-            <!-- Admin Info -->
-            <div class="d-flex align-items-center">
-                <div class="me-3 text-end">
-                    <div class="fw-semibold">Van Truong</div>
-                    <small class="opacity-75">Quản trị viên</small>
+        <main class="admin-content">
+            <div class="page-head">
+                <div>
+                    <h1>Xin chào, <span th:text="${currentAdmin != null ? currentAdmin.name : 'Admin'}">Admin</span> 👋</h1>
+                    <p>Tình hình hoạt động của rạp hôm nay.</p>
                 </div>
-
-                <!-- Avatar -->
-                <img src="https://ui-avatars.com/api/?name=Admin&background=ffffff&color=4e73df&size=128"
-                     alt="Admin Avatar"
-                     class="rounded-circle me-3"
-                     width="45"
-                     height="45">
-
-                <!-- Logout -->
-                <a href="/logout-admin" class="btn btn-light btn-sm">
-                    <i class="bi bi-box-arrow-right"></i>
-                </a>
+                <div class="page-actions">
+                    <a th:href="@{/admin/schedules/add}" class="btn btn-light"><i class="bi bi-calendar-plus"></i>Thêm lịch chiếu</a>
+                    <a th:href="@{/admin/movies/add}" class="btn btn-accent"><i class="bi bi-plus-lg"></i>Thêm phim</a>
+                </div>
             </div>
-        </div>
+
+            <!-- Số liệu chính -->
+            <div class="stat-grid">
+                <div class="stat hero">
+                    <div class="stat-label"><i class="bi bi-cash-stack"></i>Doanh thu tháng này</div>
+                    <div class="stat-value">
+                        <span th:text="${#numbers.formatDecimal(revenueMonth, 0, 'POINT', 0, 'COMMA')}">0</span><small>đ</small>
+                    </div>
+                    <div class="stat-foot">Tổng từ trước đến nay:
+                        <span th:text="${#numbers.formatDecimal(revenueTotal, 0, 'POINT', 0, 'COMMA')} + ' đ'">0 đ</span>
+                    </div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label"><i class="bi bi-receipt"></i>Hóa đơn</div>
+                    <div class="stat-value" th:text="${invoiceTotal}">0</div>
+                    <div class="stat-foot">
+                        <span th:if="${invoicePending > 0}" class="pill pill-warning" th:text="${invoicePending} + ' chờ thanh toán'"></span>
+                        <span th:if="${invoicePending == 0}">Không có hóa đơn chờ</span>
+                    </div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label"><i class="bi bi-film"></i>Phim đang hoạt động</div>
+                    <div class="stat-value"><span th:text="${movieActive}">0</span><small th:text="'/ ' + ${movieTotal}">/ 0</small></div>
+                    <div class="stat-foot"><span th:text="${scheduleToday}">0</span> suất chiếu hôm nay</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label"><i class="bi bi-people"></i>Người dùng</div>
+                    <div class="stat-value" th:text="${userTotal}">0</div>
+                    <div class="stat-foot">Tài khoản đã đăng ký</div>
+                </div>
+            </div>
+
+            <div class="dash-grid">
+                <!-- Biểu đồ doanh thu 7 ngày -->
+                <section class="panel">
+                    <div class="panel-head">
+                        <div>
+                            <h2 class="panel-title">Doanh thu 7 ngày qua</h2>
+                            <p class="panel-sub">Hóa đơn đã thanh toán / hoàn thành, theo ngày tạo</p>
+                        </div>
+                        <div class="text-end">
+                            <div class="money fs-5" th:text="${#numbers.formatDecimal(revenueWeek, 0, 'POINT', 0, 'COMMA')} + ' đ'">0 đ</div>
+                            <small class="text-muted">Tổng 7 ngày</small>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="bar-chart" role="img" aria-label="Biểu đồ doanh thu 7 ngày gần nhất">
+                            <div class="chart-empty" th:if="${revenueWeek.signum() == 0}">Chưa có doanh thu trong 7 ngày qua</div>
+                            <div class="bar-col" th:each="d : ${revenueChart}">
+                                <span class="bar-tip" th:text="${d.weekday} + ' ' + ${d.date} + ': ' + ${#numbers.formatDecimal(d.amount, 0, 'POINT', 0, 'COMMA')} + ' đ'"></span>
+                                <div class="bar" th:style="'height:' + ${d.percent} + '%'"></div>
+                            </div>
+                        </div>
+                        <div class="bar-labels">
+                            <span th:each="d : ${revenueChart}" th:classappend="${d.today} ? 'today'"
+                                  th:text="${d.today} ? 'Hôm nay' : ${d.weekday} + ' ' + ${d.date}">T2</span>
+                        </div>
+                        <!-- Bảng dữ liệu cho trình đọc màn hình -->
+                        <table class="visually-hidden">
+                            <caption>Doanh thu theo ngày</caption>
+                            <tr th:each="d : ${revenueChart}">
+                                <th th:text="${d.date}"></th>
+                                <td th:text="${#numbers.formatDecimal(d.amount, 0, 'POINT', 0, 'COMMA')} + ' đ'"></td>
+                            </tr>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Truy cập nhanh -->
+                <section class="panel">
+                    <div class="panel-head">
+                        <h2 class="panel-title">Truy cập nhanh</h2>
+                    </div>
+                    <div class="panel-body">
+                        <div class="quick-links">
+                            <a th:href="@{/admin/movies}" class="quick-link"><i class="bi bi-film"></i>Phim</a>
+                            <a th:href="@{/admin/schedules}" class="quick-link"><i class="bi bi-calendar3"></i>Lịch chiếu</a>
+                            <a th:href="@{/admin/rooms}" class="quick-link"><i class="bi bi-door-open"></i>Phòng chiếu</a>
+                            <a th:href="@{/admin/showtimes}" class="quick-link"><i class="bi bi-clock"></i>Khung giờ</a>
+                            <a th:href="@{/admin/seat-types}" class="quick-link"><i class="bi bi-grid-3x3-gap"></i>Loại ghế</a>
+                            <a th:href="@{/admin/invoices}" class="quick-link"><i class="bi bi-receipt"></i>Hóa đơn</a>
+                            <a th:href="@{/admin/promotions}" class="quick-link"><i class="bi bi-gift"></i>Khuyến mãi</a>
+                            <a th:href="@{/admin/banners}" class="quick-link"><i class="bi bi-images"></i>Banner</a>
+                            <a th:href="@{/admin/food-drink}" class="quick-link"><i class="bi bi-cup-straw"></i>Combo</a>
+                            <a th:href="@{/admin/paymentMethod}" class="quick-link"><i class="bi bi-credit-card-2-front"></i>Thanh toán</a>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Hóa đơn gần đây -->
+            <section class="panel">
+                <div class="panel-head">
+                    <h2 class="panel-title">Hóa đơn gần đây</h2>
+                    <a th:href="@{/admin/invoices}" class="btn btn-light btn-sm">Xem tất cả<i class="bi bi-arrow-right"></i></a>
+                </div>
+                <div class="table-wrap" th:if="${!recentInvoices.isEmpty()}">
+                    <table class="table table-modern table-hover">
+                        <thead>
+                        <tr>
+                            <th>Mã</th>
+                            <th>Phim</th>
+                            <th>Suất chiếu</th>
+                            <th>Ghế</th>
+                            <th>Trạng thái</th>
+                            <th class="num">Tổng tiền</th>
+                            <th class="actions-col"></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="inv : ${recentInvoices}">
+                            <td class="id-col" th:text="'#' + ${inv.id}"></td>
+                            <td>
+                                <div class="fw-600" th:text="${inv.movieName}"></div>
+                                <small class="text-muted" th:text="${inv.roomName}"></small>
+                            </td>
+                            <td>
+                                <span th:text="${#temporals.format(inv.showTime, 'HH:mm')}"></span>
+                                <small class="text-muted" th:text="' · ' + ${#temporals.format(inv.showDate, 'dd/MM/yyyy')}"></small>
+                            </td>
+                            <td><span class="tag" th:text="${inv.seatCodes}"></span></td>
+                            <td><span th:replace="~{fragments/admin :: invoiceStatus(${inv.status})}"></span></td>
+                            <td class="num money" th:text="${#numbers.formatDecimal(inv.totalPrice, 0, 'POINT', 0, 'COMMA')} + ' đ'"></td>
+                            <td class="actions-col">
+                                <a th:href="@{'/admin/invoices/' + ${inv.id}}" class="btn btn-light btn-icon btn-sm" title="Xem chi tiết"><i class="bi bi-chevron-right"></i></a>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="empty-state" th:if="${recentInvoices.isEmpty()}">
+                    <div class="icon"><i class="bi bi-receipt"></i></div>
+                    <h5>Chưa có hóa đơn nào</h5>
+                    <p>Hóa đơn đặt vé mới sẽ xuất hiện ở đây.</p>
+                </div>
+            </section>
+        </main>
     </div>
-
-
-    <!-- Main Content -->
-    <div class="container">
-        <div class="row g-4">
-            <!-- Quản lý phim -->
-            <div class="col-md-6 col-lg-4">
-                <div class="dashboard-card card movie-card">
-                    <div class="card-body text-center p-4">
-                        <div class="card-icon">
-                            <i class="bi bi-film"></i>
-                        </div>
-                        <h3>Quản lý phim</h3>
-                        <p class="text-muted">Xem, thêm, sửa, xóa thông tin phim</p>
-                        <a href="/admin/movies" class="btn btn-primary btn-card">Truy cập</a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Quản lý người dùng -->
-            <div class="col-md-6 col-lg-4">
-                <div class="dashboard-card card user-card">
-                    <div class="card-body text-center p-4">
-                        <div class="card-icon">
-                            <i class="bi bi-people-fill"></i>
-                        </div>
-                        <h3>Quản lý người dùng</h3>
-                        <p class="text-muted">Quản lý tài khoản người dùng và phân quyền</p>
-                        <a href="/admin/users" class="btn btn-success btn-card">Truy cập</a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Quản lý loại ghế -->
-            <div class="col-md-6 col-lg-4">
-                <div class="dashboard-card card seat-card">
-                    <div class="card-body text-center p-4">
-                        <div class="card-icon">
-                            <i class="bi bi-grid-3x3-gap-fill"></i>
-                        </div>
-                        <h3>Quản lý loại ghế</h3>
-                        <p class="text-muted">Thiết lập các loại ghế và giá vé</p>
-                        <a href="/admin/seat-types" class="btn btn-info btn-card">Truy cập</a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Quản lý phòng chiếu -->
-            <div class="col-md-6 col-lg-4">
-                <div class="dashboard-card card room-card">
-                    <div class="card-body text-center p-4">
-                        <div class="card-icon">
-                            <i class="bi bi-building"></i>
-                        </div>
-                        <h3>Quản lý phòng chiếu</h3>
-                        <p class="text-muted">Thiết lập thông tin các phòng chiếu</p>
-                        <a href="/admin/rooms" class="btn btn-warning btn-card">Truy cập</a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Quản lý khung giờ chiếu -->
-            <div class="col-md-6 col-lg-4">
-                <div class="dashboard-card card showtime-card">
-                    <div class="card-body text-center p-4">
-                        <div class="card-icon">
-                            <i class="bi bi-clock-history"></i>
-                        </div>
-                        <h3>Quản lý khung giờ chiếu</h3>
-                        <p class="text-muted">Thiết lập các khung giờ chiếu trong ngày</p>
-                        <a href="/admin/showtimes" class="btn btn-secondary btn-card">Truy cập</a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Quản lý lịch chiếu -->
-            <div class="col-md-6 col-lg-4">
-                <div class="dashboard-card card schedule-card">
-                    <div class="card-body text-center p-4">
-                        <div class="card-icon">
-                            <i class="bi bi-calendar-event"></i>
-                        </div>
-                        <h3>Quản lý lịch chiếu</h3>
-                        <p class="text-muted">Lập lịch chiếu phim cho các phòng</p>
-                        <a href="/admin/schedules" class="btn btn-danger btn-card">Truy cập</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-4">
-                <div class="dashboard-card card schedule-card">
-                    <div class="card-body text-center p-4">
-                        <div class="card-icon">
-                            <i class="bi bi-calendar-event"></i>
-                        </div>
-                        <h3>Quản lý phương thức thanh toán</h3>
-                        <p class="text-muted">Quản lý các phương thức thanh toán</p>
-                        <a href="/admin/paymentMethod" class="btn btn-danger btn-card">Truy cập</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-4">
-                <div class="dashboard-card card" style="border-top: 4px solid #17a2b8;">
-                    <div class="card-body text-center p-4">
-                        <div class="card-icon" style="color: #17a2b8;">
-                            <i class="bi bi-receipt-cutoff"></i>
-                        </div>
-                        <h3>Quản lý hóa đơn</h3>
-                        <p class="text-muted">Xem và quản lý các hóa đơn đặt vé</p>
-                        <a href="/admin/invoices" class="btn btn-card" style="background-color: #17a2b8; border-color: #17a2b8; color: white;">Truy cập</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-4">
-                <div class="dashboard-card card" style="border-top: 4px solid #fd7e14;">
-                    <div class="card-body text-center p-4">
-                        <div class="card-icon" style="color: #fd7e14;">
-                            <i class="bi bi-tag-fill"></i>
-                        </div>
-                        <h3>Quản lý khuyến mãi</h3>
-                        <p class="text-muted">Tạo và quản lý các chương trình khuyến mãi</p>
-                        <a href="/admin/promotions" class="btn btn-card" style="background-color: #fd7e14; border-color: #fd7e14; color: white;">Truy cập</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Footer -->
-    <div class="footer text-center mt-5">
-        <div class="container">
-            <p class="mb-0">Hệ thống quản lý rạp chiếu phim &copy; 2023</p>
-            <small class="text-muted">Phiên bản 1.0</small>
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</div>
+<th:block th:replace="~{fragments/admin :: scripts}"></th:block>
 </body>
 </html>

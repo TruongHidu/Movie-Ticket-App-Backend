@@ -31,6 +31,7 @@ public class InvoiceService {
     private final ScheduleRepository scheduleRepository;
     private final PaymentMethodRepository paymentMethodRepository;
     private final SeatStatusRepository seatStatusRepository;
+    private final VNPAYConfig vnpayConfig;
 
     public List<InvoiceDTO> getInvoicesByEmail(String email) {
         User user = userRepository.findByEmail(email)
@@ -291,14 +292,14 @@ public class InvoiceService {
 
         // 2️⃣ Tạo URL VNPay
         String vnp_TxnRef = String.valueOf(invoice.getId()); // mã hóa đơn
-        String vnp_TmnCode = VNPAYConfig.vnp_TmnCode;
-        String vnp_HashSecret = VNPAYConfig.vnp_HashSecret;
-        String vnp_Url = VNPAYConfig.vnp_Url;
-        String vnp_ReturnUrl = VNPAYConfig.vnp_ReturnUrl;
+        String vnp_TmnCode = vnpayConfig.getTmnCode();
+        String vnp_HashSecret = vnpayConfig.getHashSecret();
+        String vnp_Url = vnpayConfig.getUrl();
+        String vnp_ReturnUrl = vnpayConfig.getReturnUrl();
 
-        String vnp_Version = VNPAYConfig.vnp_Version;
-        String vnp_Command = VNPAYConfig.vnp_Command;
-        String orderType = VNPAYConfig.orderType;
+        String vnp_Version = VNPAYConfig.VERSION;
+        String vnp_Command = VNPAYConfig.COMMAND;
+        String orderType = vnpayConfig.getOrderType();
         String amount = String.valueOf(invoice.getTotalPrice().multiply(BigDecimal.valueOf(100)).intValue());
 
         Map<String, String> vnp_Params = new HashMap<>();
@@ -438,14 +439,14 @@ public class InvoiceService {
 
     private String buildVNPayUrl(Invoice invoice) throws Exception {
         String vnp_TxnRef = String.valueOf(invoice.getId()); // mã hóa đơn
-        String vnp_TmnCode = VNPAYConfig.vnp_TmnCode;
-        String vnp_HashSecret = VNPAYConfig.vnp_HashSecret;
-        String vnp_Url = VNPAYConfig.vnp_Url;
-        String vnp_ReturnUrl = VNPAYConfig.vnp_ReturnUrl;
+        String vnp_TmnCode = vnpayConfig.getTmnCode();
+        String vnp_HashSecret = vnpayConfig.getHashSecret();
+        String vnp_Url = vnpayConfig.getUrl();
+        String vnp_ReturnUrl = vnpayConfig.getReturnUrl();
 
-        String vnp_Version = VNPAYConfig.vnp_Version;
-        String vnp_Command = VNPAYConfig.vnp_Command;
-        String orderType = VNPAYConfig.orderType;
+        String vnp_Version = VNPAYConfig.VERSION;
+        String vnp_Command = VNPAYConfig.COMMAND;
+        String orderType = vnpayConfig.getOrderType();
         String amount = String.valueOf(invoice.getTotalPrice().multiply(BigDecimal.valueOf(100)).intValue());
 
         Map<String, String> vnp_Params = new HashMap<>();

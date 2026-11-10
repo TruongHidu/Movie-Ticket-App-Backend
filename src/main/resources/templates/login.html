@@ -1,150 +1,186 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng nhập Admin</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <style>
-        :root {
-            --primary: #4e73df;
-            --secondary: #6f42c1;
-            --dark: #5a5c69;
-        }
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:replace="~{fragments/admin :: head('Đăng nhập')}"></head>
+<body class="admin-body">
+<style>
+    .auth {
+        min-height: 100vh;
+        display: grid;
+        grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+        background: var(--surface);
+    }
+    .auth-art {
+        position: relative;
+        overflow: hidden;
+        background: var(--sidebar);
+        color: #fff;
+        padding: 48px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    .auth-art::before {
+        content: "";
+        position: absolute;
+        inset: -20% -10% auto auto;
+        width: 640px; height: 640px;
+        background: radial-gradient(circle at center, rgba(242, 162, 44, .28), transparent 62%);
+        pointer-events: none;
+    }
+    .auth-art::after {
+        /* dải đèn rạp chiếu */
+        content: "";
+        position: absolute;
+        left: 48px; right: 48px; top: 50%;
+        height: 10px;
+        background-image: radial-gradient(circle, rgba(242, 162, 44, .85) 2.5px, transparent 3px);
+        background-size: 22px 10px;
+        opacity: .5;
+    }
+    .auth-art .brand { display: flex; align-items: center; gap: 12px; position: relative; z-index: 1; }
+    .auth-art .brand strong { font-size: 18px; }
+    .auth-art h2 {
+        position: relative; z-index: 1;
+        font-size: 38px; line-height: 1.2; font-weight: 700; letter-spacing: -.6px;
+        max-width: 460px;
+        margin: 0 0 14px;
+    }
+    .auth-art h2 span { color: var(--accent); }
+    .auth-art p { color: #a6abbd; max-width: 420px; margin: 0; position: relative; z-index: 1; }
+    .auth-art .features { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; position: relative; z-index: 1; }
+    .auth-art .features span {
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 7px 12px; border-radius: 999px;
+        background: rgba(255, 255, 255, .06);
+        border: 1px solid rgba(255, 255, 255, .08);
+        font-size: 13px; color: #d9dce6;
+    }
+    .auth-art .features i { color: var(--accent); }
+    .auth-art small { color: #646a7e; position: relative; z-index: 1; }
 
-        body {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            overflow: hidden;
-        }
+    .auth-form-wrap { display: grid; place-items: center; padding: 40px 24px; }
+    .auth-form { width: 100%; max-width: 400px; }
+    .auth-form .lock {
+        width: 52px; height: 52px; border-radius: 14px;
+        display: grid; place-items: center;
+        background: var(--accent-soft); color: var(--accent-strong);
+        font-size: 24px; margin-bottom: 20px;
+    }
+    .auth-form h1 { font-size: 26px; font-weight: 700; letter-spacing: -.4px; margin: 0 0 6px; }
+    .auth-form .lead { color: var(--muted); font-size: 14.5px; margin-bottom: 28px; }
+    .auth-form .form-control { padding-top: 11px; padding-bottom: 11px; }
+    .pw-toggle {
+        position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+        border: 0; background: transparent; color: var(--muted);
+        width: 36px; height: 36px; border-radius: 8px;
+    }
+    .pw-toggle:hover { color: var(--ink); background: var(--surface-2); }
+    .auth-form .btn-submit { width: 100%; padding: 12px; font-size: 15px; margin-top: 8px; }
+    .auth-note { margin-top: 28px; font-size: 12.5px; color: var(--muted); display: flex; gap: 8px; }
 
-        .login-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-            overflow: hidden;
-            width: 100%;
-            max-width: 450px;
-            transition: transform 0.3s ease;
-        }
+    @media (max-width: 991.98px) {
+        .auth { grid-template-columns: 1fr; }
+        .auth-art { display: none; }
+    }
+</style>
 
-        .login-header {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 2rem;
-            text-align: center;
-            border-bottom: 1px solid rgba(0,0,0,0.05);
-        }
-
-        .login-header h2 {
-            font-weight: 700;
-            color: var(--dark);
-            margin-top: 10px;
-            margin-bottom: 0;
-        }
-
-        .login-icon {
-            font-size: 3.5rem;
-            color: var(--primary);
-            margin-bottom: 10px;
-        }
-
-        .login-body {
-            padding: 2.5rem;
-        }
-
-        .form-control {
-            border-radius: 10px;
-            padding: 0.75rem 1.25rem;
-            border: 1px solid #e3e6f0;
-            background-color: #f8f9fc;
-        }
-
-        .form-control:focus {
-            box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
-            border-color: var(--primary);
-            background-color: #fff;
-        }
-
-        .input-group-text {
-            border-radius: 10px 0 0 10px;
-            border: 1px solid #e3e6f0;
-            background-color: #f8f9fc;
-            color: var(--dark);
-        }
-
-        .form-control {
-            border-radius: 0 10px 10px 0;
-        }
-
-        .btn-login {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            border: none;
-            border-radius: 10px;
-            padding: 0.75rem;
-            font-weight: 600;
-            letter-spacing: 1px;
-            color: white;
-            transition: all 0.3s;
-        }
-
-        .btn-login:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(78, 115, 223, 0.4);
-            color: white;
-        }
-
-        .alert-danger {
-            border-radius: 10px;
-            font-size: 0.9rem;
-        }
-
-    </style>
-</head>
-<body>
-
-    <div class="login-card">
-        <div class="login-header">
-            <i class="bi bi-shield-lock login-icon"></i>
-            <h2>Quản Trị Viên</h2>
-            <p class="text-muted mb-0 mt-2">Đăng nhập vào hệ thống</p>
+<div class="auth">
+    <section class="auth-art" aria-hidden="true">
+        <div class="brand">
+            <span class="brand-mark"><i class="bi bi-film"></i></span>
+            <strong>MovieTicket</strong>
         </div>
-        <div class="login-body">
-            
-            <div th:if="${error}" class="alert alert-danger d-flex align-items-center" role="alert">
-                <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                <div th:text="${error}"></div>
+
+        <div>
+            <h2>Quản lý rạp chiếu <span>gọn gàng</span>, mỗi suất chiếu đều trong tầm tay.</h2>
+            <p>Phim, lịch chiếu, phòng, giá vé, hóa đơn và khách hàng — tất cả trong một bảng điều khiển.</p>
+            <div class="features">
+                <span><i class="bi bi-calendar3"></i>Lịch chiếu</span>
+                <span><i class="bi bi-receipt"></i>Hóa đơn &amp; doanh thu</span>
+                <span><i class="bi bi-people"></i>Khách hàng</span>
+            </div>
+        </div>
+
+        <small>&copy; <span th:text="${#temporals.year(#temporals.createToday())}">2026</span> MovieTicket · Khu vực dành cho quản trị viên</small>
+    </section>
+
+    <main class="auth-form-wrap">
+        <div class="auth-form">
+            <div class="lock"><i class="bi bi-shield-lock"></i></div>
+            <h1>Đăng nhập quản trị</h1>
+            <p class="lead">Chỉ tài khoản có quyền admin mới truy cập được trang này.</p>
+
+            <div th:if="${info}" class="alert alert-info" role="status">
+                <i class="bi bi-info-circle-fill"></i><span th:text="${info}"></span>
+            </div>
+            <div th:if="${error}" class="alert alert-danger" role="alert">
+                <i class="bi bi-exclamation-triangle-fill"></i><span th:text="${error}"></span>
             </div>
 
-            <form action="/login-admin" method="post">
-                <div class="mb-4">
-                    <label class="form-label text-muted fw-semibold mb-1">Email</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                        <input type="email" class="form-control" name="email" placeholder="Nhập email quản trị..." required>
-                    </div>
-                </div>
-                
-                <div class="mb-4">
-                    <label class="form-label text-muted fw-semibold mb-1">Mật khẩu</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-key"></i></span>
-                        <input type="password" class="form-control" name="password" placeholder="Nhập mật khẩu..." required>
+            <form th:action="@{/admin/login}" method="post" novalidate id="loginForm">
+                <input type="hidden" name="redirect" th:value="${redirect}">
+
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <div class="input-icon">
+                        <i class="bi bi-envelope"></i>
+                        <input type="email" class="form-control" id="email" name="email"
+                               th:value="${email}" placeholder="admin@email.com"
+                               autocomplete="username" required autofocus>
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-login w-100 mt-2">
-                    <i class="bi bi-box-arrow-in-right me-2"></i> ĐĂNG NHẬP
+                <div class="mb-3">
+                    <label for="password" class="form-label">Mật khẩu</label>
+                    <div class="input-icon position-relative">
+                        <i class="bi bi-key"></i>
+                        <input type="password" class="form-control" id="password" name="password"
+                               placeholder="••••••••" autocomplete="current-password" required
+                               style="padding-right: 46px;">
+                        <button type="button" class="pw-toggle" id="pwToggle" aria-label="Hiện mật khẩu">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-submit" id="submitBtn">
+                    <i class="bi bi-box-arrow-in-right"></i><span>Đăng nhập</span>
                 </button>
             </form>
-        </div>
-    </div>
 
+            <div class="auth-note">
+                <i class="bi bi-shield-check"></i>
+                <span>Nhập sai mật khẩu 5 lần, đăng nhập sẽ bị tạm khóa 10 phút. Phiên tự hết hạn sau 1 giờ không thao tác.</span>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    (function () {
+        var pw = document.getElementById('password');
+        var toggle = document.getElementById('pwToggle');
+        toggle.addEventListener('click', function () {
+            var show = pw.type === 'password';
+            pw.type = show ? 'text' : 'password';
+            toggle.innerHTML = show ? '<i class="bi bi-eye-slash"></i>' : '<i class="bi bi-eye"></i>';
+            toggle.setAttribute('aria-label', show ? 'Ẩn mật khẩu' : 'Hiện mật khẩu');
+        });
+
+        var email = document.getElementById('email');
+        if (email.value) pw.focus();
+
+        document.getElementById('loginForm').addEventListener('submit', function (e) {
+            if (!email.value.trim() || !pw.value) {
+                e.preventDefault();
+                (email.value.trim() ? pw : email).focus();
+                return;
+            }
+            var btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span><span>Đang đăng nhập…</span>';
+        });
+    })();
+</script>
 </body>
 </html>
