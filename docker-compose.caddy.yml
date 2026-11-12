@@ -1,8 +1,10 @@
-# Chỉ dùng trên VPS: nối app vào mạng Docker của Caddy (container pos-saas-web-1)
-# để Caddy gọi được app qua tên "movie-ticket-app:8081".
+# Chỉ dùng trên VPS: nối app vào network "edge" của Caddy edge dùng chung (container edge-caddy,
+# /opt/edge-proxy trên VPS) để edge gọi được app qua tên "movie-ticket-app:8081".
+# MySQL KHÔNG nối vào network này.
 #
 # Bật bằng cách thêm vào .env trên VPS:
 #   COMPOSE_FILE=docker-compose.yml:docker-compose.caddy.yml
+#   PROXY_NETWORK=edge      # (tuỳ chọn) mặc định là edge
 services:
   app:
     networks:
@@ -12,4 +14,4 @@ services:
 networks:
   proxy:
     external: true
-    name: ${PROXY_NETWORK:-pos-saas_default}
+    name: ${PROXY_NETWORK:-edge}
